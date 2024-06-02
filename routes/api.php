@@ -2,7 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
+use App\Actions\Fortify\CreateNewUser;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -16,4 +16,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+Route::post('/register', function (Request $request) {
+    $createNewUser = new CreateNewUser();
+    $user = $createNewUser->create($request->all());
+
+    return response()->json(['message' => 'User created successfully', 'user' => $user], 201);
 });
