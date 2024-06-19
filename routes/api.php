@@ -2,7 +2,10 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Actions\Fortify\CreateNewUser;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\DeckController;
+use App\Http\Controllers\CardController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -14,13 +17,16 @@ use App\Actions\Fortify\CreateNewUser;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+//Public Route
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
 
-Route::post('/register', function (Request $request) {
-    $createNewUser = new CreateNewUser();
-    $user = $createNewUser->create($request->all());
-
-    return response()->json(['message' => 'User created successfully', 'user' => $user], 201);
+//Protected Route
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', [UserController::class, 'getUser']);
+    Route::get('/users', [UserController::class, 'getAllUsers']);
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/decks', [DeckController::class, 'getDecks']);
+    Route::get('/decks/{deck_id}/cards', [CardController::class, 'getCardsByDeckID']);
+    Route::get('/cards/{card_id}', [CardController::class, 'getCardByID']);
 });

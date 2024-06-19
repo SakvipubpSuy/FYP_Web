@@ -23,12 +23,12 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
+    
     protected $fillable = [
         'name',
         'email',
         'password',
     ];
-
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -58,4 +58,8 @@ class User extends Authenticatable
     protected $appends = [
         'profile_photo_url',
     ];
+    public function cards()
+    {
+        return $this->belongsToMany(Card::class, 'card_user', 'user_id', 'card_id');
+    }
 }
