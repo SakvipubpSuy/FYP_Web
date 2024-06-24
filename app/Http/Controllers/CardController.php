@@ -4,8 +4,19 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use App\Models\Card;
 use App\Models\Deck;
+use App\Models\User;
+use Endroid\QrCode\Color\Color;
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\ErrorCorrectionLevel;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Label\Label;
+use Endroid\QrCode\Logo\Logo;
+use Endroid\QrCode\RoundBlockSizeMode;
+use Endroid\QrCode\Writer\PngWriter;
+use Endroid\QrCode\Writer\ValidationException;
 
 class CardController extends Controller
 {
@@ -112,5 +123,62 @@ class CardController extends Controller
         }
     
         return redirect()->route('cards.index', ['page' => $page])->with('success', 'Card has been deleted successfully!');
+    }
+    public function generateQrCode($card_id)
+    {
+
+        // Get the card information from the database
+        // $card = Card::find($card_id);
+        // Create QR code
+        $writer = new PngWriter();
+        $qrCode = QrCode::create($card_id)
+        ->setEncoding(new Encoding('UTF-8'))
+        ->setErrorCorrectionLevel(ErrorCorrectionLevel::Low)
+        ->setSize(70)
+        ->setMargin(5)
+        ->setRoundBlockSizeMode(RoundBlockSizeMode::Margin)
+        ->setForegroundColor(new Color(0, 0, 0))
+        ->setBackgroundColor(new Color(255, 255, 255));
+
+        $result = $writer->write($qrCode);
+            // Output the QR code as a PNG image
+        return response($result->getString(), 200, [
+            'Content-Type' => 'image/png',
+            'Content-Disposition' => 'inline; filename="qrcode.png"'
+        ]);
+    }
+    public function scanCard(Request $request)
+    {
+        $request->validate([
+            'card_id' => 'required|integer|exists:cards,card_id',
+        ]);
+        
+        $user = auth()->user();
+        $card_id = $request->input('card_id');
+    
+        // Check if the card already exists in the pivot table for this user
+        $exists = DB::table('card_user')
+                    ->where('user_id', $user->id)
+                    ->where('card_id', $card_id)
+                    ->exists();
+    
+        if ($exists) {
+            return response()->json(['message' => 'You have already scanned this card.'], 200);
+        } else {
+            // Insert into the pivot table
+            DB::table('card_user')->insert([
+                'user_id' => $user->id,
+                'card_id' => $card_id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            return response()->json(['message' => 'Card scanned successfully'], 200);
+        }
+    }
+    public function search(Request $request)
+    {
+        $query = $request->input('query');
+        $cards = Card::where('card_name', 'LIKE', "%{$query}%")->paginate(4);
+        return view('cards.index', compact('cards'));
     }
 }

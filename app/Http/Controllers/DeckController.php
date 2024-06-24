@@ -19,13 +19,6 @@ class DeckController extends Controller
         $decks = Deck::withCount('cards')->paginate(4); // Assuming you want 4 decks per page
         return view('decks.index', compact('decks'));
     }
-    public function search(Request $request)
-    {
-
-        $query = $request->input('query');
-        $decks = Deck::where('deck_name', 'LIKE', "%{$query}%")->paginate(4);
-        return view('decks.index', compact('decks'));
-    }
     public function create()
     {
         $decks = Deck::all();
@@ -107,5 +100,11 @@ class DeckController extends Controller
         
             return redirect()->route('decks.index', ['page' => $page])->with('success', 'Deck and all its cards deleted successfully!');
         }
+    }
+    public function search(Request $request)
+    {
+        $query = $request->input('query');
+        $decks = Deck::where('deck_name', 'LIKE', "%{$query}%")->paginate(4);
+        return view('decks.index', compact('decks'));
     }
 }

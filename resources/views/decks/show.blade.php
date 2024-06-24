@@ -14,7 +14,10 @@
                 <div class="rounded overflow-hidden shadow-lg max-w-xs mx-auto">
                     <img class="w-full h-48 object-cover" src="{{ asset('/images/Zhongli.jpg') }}" alt="Card Image">
                     <div class="px-6 py-4">
-                        <div class="font-bold text-xl mb-2">{{ $card->card_name }}</div>
+                        <div class="flex items-center justify-between">
+                            <div class="font-bold text-xl">{{ $card->card_name }}</div>
+                            <img src="{{ route('cards.qrcode', ['card_id' => $card->card_id]) }}" alt="QR Code">
+                        </div>
                         <p class="text-gray-700 text-base">{{ $card->card_description }}</p>
                     </div>
                     <div class="px-6 pt-4 pb-2">

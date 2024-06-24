@@ -30,6 +30,8 @@ Route::middleware([
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/admins',[AdminController::class,'index'])->name('admins');
     Route::get('/decks/search', [DeckController::class, 'search'])->name('decks.search');
+    Route::get('cards/search',[CardController::class, 'search'])->name('cards.search');
+    Route::get('/decks/{card_id}/qrcode', [CardController::class, 'generateQrCode'])->name('cards.qrcode');
     
     Route::resource('decks', DeckController::class);
     Route::resource('cards', CardController::class);
