@@ -1,3 +1,5 @@
+<!-- Show all the cards here -->
+
 @extends('layouts.app')
 
 @section('content')
@@ -56,10 +58,13 @@
                             <div class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">Deck Name: {{ $card->deck->deck_name }}</div>
                         </div>
                         <div class="flex flex-wrap">
-                            <div class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">Card Tier: {{ $card->card_tier }}</div>
+                            <div class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">Card Tier: {{ $card->cardTier->card_tier_name }}</div>
                         </div>
                         <div class="flex flex-wrap">
                             <div class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">Card Version: {{ $card->card_version }}</div>
+                        </div>
+                        <div class="flex flex-wrap">
+                            <div class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">Card EXP: {{ $card->cardTier->card_XP }}</div>
                         </div>
                         <div class="flex items-center justify-center">
                             <button type="button" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onclick="openDeleteModal({{ $card->card_id }},{{ request()->input('page', 1) }})">

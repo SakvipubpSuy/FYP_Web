@@ -30,4 +30,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/decks/{deck_id}/cards', [CardController::class, 'getCardsByDeckID']);
     Route::get('/cards/{card_id}', [CardController::class, 'getCardByID']);
     Route::post('/scan-card', [CardController::class, 'scanCard']);
+    Route::get('/user/total-cards', [CardController::class, 'countUserTotalCards']);
 });

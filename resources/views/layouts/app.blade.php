@@ -20,11 +20,9 @@
 </head>
 <body class="font-sans antialiased">
    
-
     <div class="min-h-screen bg-gray-100">
         @livewire('navigation-menu')
-
-
+        <!-- Page Heading -->
         <div class="flex-1">
             <!-- Page Heading -->
             @if (isset($header))
@@ -34,18 +32,18 @@
                     </div>
                 </header>
             @endif
-
             <!-- Page Content -->
             <main>
                 @yield('content')
             </main>
         </div>
+  
     </div>
 
     @stack('modals')
 
     @livewireScripts
 
-    @yield('scripts') 
+    @yield('scripts')
 </body>
 </html>

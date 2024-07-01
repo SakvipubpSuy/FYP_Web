@@ -1,3 +1,5 @@
+<!-- Create new cards  -->
+
 @extends('layouts.app')
 
 @section('content')
@@ -51,10 +53,13 @@
         </div>
         <div class="flex flex-wrap -mx-3 mb-6">
           <div class="w-full px-3">
-            <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="card_tier">
-              Card Tier
-            </label>
-            <input class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" value="{{old('card_tier')}}" id="card_tier" name="card_tier" type="text" placeholder="Card Tier">
+            <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="card_tier_id">Card Tier</label>
+            <select name="card_tier_id" id="card_tier_id" class="mt-1 p-2 block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border-gray-300 rounded-md" required>
+                <option value="">Select Card Tier</option>
+                @foreach ($cardTiers as $cardTier)
+                    <option value="{{ $cardTier->card_tier_id }}" {{ $cardTier->card_tier_id == old('card_tier_id') ? 'selected' : '' }} > {{ $cardTier->card_tier_name }}</option>
+                @endforeach
+            </select>
           </div>
         </div>
         <div class="flex flex-wrap -mx-3 mb-6">

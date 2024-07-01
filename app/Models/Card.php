@@ -11,7 +11,7 @@ class Card extends Model
     protected $primaryKey = 'card_id';
     protected $fillable = [
         'deck_id',
-        'card_tier',
+        'card_tier_id',
         'card_name',
         'card_description',
         'card_version',
@@ -26,5 +26,9 @@ class Card extends Model
     public function users()
     {
         return $this->belongsToMany(User::class, 'card_user', 'card_id', 'user_id');
+    }
+    public function cardTier()
+    {
+        return $this->belongsTo(CardTier::class, 'card_tier_id', 'card_tier_id');
     }
 }

@@ -25,4 +25,8 @@ class Deck extends Model
             $deck->cards()->delete();
         });
     }
+    public function scannedCards()
+    {
+        return $this->belongsToMany(Card::class, 'card_user', 'card_id', 'card_id');
+    }
 }

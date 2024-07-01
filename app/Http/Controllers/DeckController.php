@@ -11,7 +11,14 @@ class DeckController extends Controller
 {
     public function getDecks(Request $request)
     {
-        $decks = Deck::all();
+        //Get total cards of a deck and cards scanned by the authenticated user in that deck
+        $userId = auth()->id();
+        $decks = Deck::withCount('cards as total_cards_count')
+        ->withCount(['cards as scanned_cards_count' => function ($query) use ($userId) {
+            $query->join('card_user', 'cards.card_id', '=', 'card_user.card_id')
+                  ->where('card_user.user_id', $userId);
+        }])
+        ->get();
         return response()->json($decks);
     }
     public function index()
