@@ -11,12 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('card_tiers', function (Blueprint $table) {
-            $table->id('card_tier_id');
-            $table->string('card_tier_name');
-            $table->Integer('card_XP');
-            $table->Integer('card_energy_required');
+        Schema::create('questions', function (Blueprint $table) {
+            $table->id('question_id');
+            $table->unsignedBigInteger('card_id');
+            $table->string('question');
             $table->timestamps();
+    
+            $table->foreign('card_id')->references('card_id')->on('cards')->onDelete('cascade');
         });
     }
 
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('card_tiers');
+        Schema::dropIfExists('questions');
     }
 };

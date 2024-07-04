@@ -7,9 +7,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Log;
 use App\Models\Card;
 use App\Models\Deck;
 use App\Models\User;
+use App\Models\Question;
+use App\Models\Answer;
 use App\Models\CardTier;
 use Endroid\QrCode\Color\Color;
 use Endroid\QrCode\Encoding\Encoding;
@@ -23,6 +26,8 @@ use Endroid\QrCode\Writer\ValidationException;
 
 class CardController extends Controller
 {
+
+    //FOR API 
     public function getCardsByDeckID(Request $request,$deck_id)
     {
         // Fetch cards that belong to the specified deck
@@ -54,115 +59,6 @@ class CardController extends Controller
                 ->where('user_id', $user->id)
                 ->count();
         return response()->json(['total_cards' => $total]);
-    }
-    public function index()
-    {   
-        $cardTier = CardTier::all();
-        $cards = Card::paginate(4); // Assuming you want x cards per page
-        return view('cards.index', compact('cards','cardTier'));
-    }
-
-    public function create()
-    {
-        $cards = Card::all();
-        $decks = Deck::all();
-        $cardTiers = CardTier::all();
-        return view('cards.create', compact('cards', 'decks','cardTiers'));
-    }
-
-    public function store(Request $request)
-    {
-        // dd("hi");
-        $validatedData = $request->validate([
-            'card_name' => 'required|string|max:255',
-            'card_tier_id' => 'required|string|max:255',
-            'deck_id' => 'required|exists:decks,deck_id',
-            'card_description' => 'required|string',
-        ]);
-        $validatedData['version'] = 1;
-        try {
-            $card = Card::create($validatedData);
-        } catch (\Exception $e) {
-            return redirect()->route('cards.create')->with('error', 'Card creation failed!');
-        }
-
-        return redirect()->route('cards.create')->with('success', 'Card created successfully!');
-    }
-
-    public function show(Card $card)
-    {
-        return view('cards.index', compact('card'));
-    }
-    public function edit(Card $card)
-    {
-        return view('cards.index', compact('card'));
-    }
-
-    public function update(Request $request, Card $card)
-    {
-        $validatedData = $request->validate([
-            'card_name' => 'required|string|max:255',
-            'card_tier_id' => 'required|string|max:255',
-            'deck_id' => 'required|exists:decks,id',
-            'card_description' => 'required|string',
-        ]);
-
-        $validatedData['version'] = $card->version + 1; // Increment version
-
-        try {
-            $card->update($validatedData);
-        } catch (\Exception $e) {
-            return redirect()->route('cards.update', $deck)->with('error', 'Card update failed!');
-        }
-
-        return redirect()->route('cards.index')->with('success', 'Card updated successfully!');
-    }
-
-    public function destroy(Request $request,$card_id)
-    {
-        $card = Card::find($card_id);
-
-        if (!$card) {
-            return redirect()->route('cards.index')->with('error', 'Card not found!');
-        }
-    
-        $card->delete();
-    
-        // Get the current page number
-        $page = $request->input('page', 1);
-    
-        // Retrieve the cards after deletion
-        $cards = Card::paginate(4, ['*'], 'page', $page);
-    
-        // If the current page is empty and it's not the first page, redirect to the previous page
-        if ($cards->isEmpty() && $page > 1) {
-            return redirect()->route('cards.index', ['page' => $page - 1])->with('success', 'Card has been deleted successfully!');
-        }
-    
-        return redirect()->route('cards.index', ['page' => $page])->with('success', 'Card has been deleted successfully!');
-    }
-    public function generateQrCode($card_id)
-    {
-
-        // Get the card information from the database
-        // $card = Card::find($card_id);
-        // Create QR code
-        $writer = new PngWriter();
-        $qrCode = QrCode::create($card_id)
-        ->setEncoding(new Encoding('UTF-8'))
-        ->setErrorCorrectionLevel(ErrorCorrectionLevel::Low)
-        ->setSize(70)
-        ->setMargin(5)
-        ->setRoundBlockSizeMode(RoundBlockSizeMode::Margin)
-        ->setForegroundColor(new Color(0, 0, 0))
-        ->setBackgroundColor(new Color(255, 255, 255));
-
-        $result = $writer->write($qrCode);
-            // Output the QR code as a PNG image
-        return response($result->getString(), 200, [
-            'Content-Type' => 'image/png',
-            'Content-Disposition' => 'inline; filename="qrcode.png"'
-        ]);
     }
     public function scanCard(Request $request)
     {
@@ -215,6 +111,187 @@ class CardController extends Controller
             return response()->json(['message' => 'An error occurred. Please try again later.'], 500);
         }
     }
+
+    //FOR WEB 
+    public function index()
+    {   
+        $cardTiers = CardTier::all();
+        $cards = Card::paginate(4); 
+        $decks = Deck::all();
+        return view('cards.index', compact('cards','cardTiers','decks'));
+    }
+
+    public function create()
+    {
+        $cards = Card::all();
+        $decks = Deck::all();
+        $cardTiers = CardTier::all();
+        $answers = [];
+        return view('cards.create', compact('cards', 'decks','cardTiers','answers'));
+    }
+
+    public function store(Request $request)
+    {
+        // Debugging to see the request data
+        // dd($request->all()); // Uncomment this line for debugging if needed
+    
+        $validatedData = $request->validate([
+            'card_name' => 'required|string|max:255',
+            'card_tier_id' => 'required|string|max:255',
+            'deck_id' => 'required|exists:decks,deck_id',
+            'card_description' => 'required|string',
+            'question' => 'required|string',
+            'answers' => 'required|array|min:2',
+            'answers.*.answer' => 'required|string',
+            'is_correct' => 'required|integer',
+        ]);
+    
+        try {
+            DB::transaction(function () use ($request) {
+                $card = Card::create([
+                    'card_name' => $request->card_name,
+                    'card_description' => $request->card_description,
+                    'card_tier_id' => $request->card_tier_id,
+                    'deck_id' => $request->deck_id,
+                ]);
+    
+                if ($request->question) {
+                    $question = Question::create([
+                        'card_id' => $card->card_id,
+                        'question' => $request->question,
+                    ]);
+    
+                    foreach ($request->answers as $index => $answer) {
+                        Answer::create([
+                            'question_id' => $question->question_id,
+                            'answer' => $answer['answer'],
+                            'is_correct' => $index == $request->is_correct ? 1 : 0,
+                        ]);
+                    }
+                }
+            });
+    
+            return redirect()->route('cards.create')->with('success', 'Card created successfully!');
+        } catch (\Exception $e) {
+            // Log the error for debugging
+            \Log::error('Card creation failed: ' . $e->getMessage());
+    
+            return redirect()->route('cards.create')->with('error', 'Card creation failed!');
+        }
+    }
+
+    public function show(Card $card)
+    {
+        return view('cards.index', compact('card'));
+    }
+
+    public function editCard(Request $request,Card $card)
+    {
+        // Validate and edit card details without changing the version
+        $validatedData = $request->validate([
+            'card_name' => 'string|max:255',
+            'card_description' => 'string',
+            'card_tier_id' => 'exists:card_tiers,card_tier_id',
+            'deck_id' => 'exists:decks,deck_id',
+        ]);
+
+        try {
+            $card->update($validatedData);
+        } catch (\Exception $e) {
+            return redirect()->route('cards.index')->with('editError', 'Card edit failed!');
+        }
+
+        return redirect()->route('cards.index')->with('editSuccess', 'Card edit successfully.');
+    }
+
+    public function updateCard(Request $request, Card $card)
+    {
+        try {
+            // Validate the incoming request
+            $request->validate([
+                'card_name' => 'string|max:255',
+                'card_description' => 'required|string|max:255',
+                'deck_id' => 'exists:decks,deck_id',
+                'card_tier_id' => 'exists:card_tiers,card_tier_id',
+            ]);
+
+            // Find the existing card
+            $existingCard = Card::findOrFail($card->card_id);
+
+            // Create a new card entry for the old version
+            $oldCard = $existingCard->replicate();
+            $oldCard->card_version = $existingCard->card_version;
+            $oldCard->parent_card_id = $existingCard->parent_card_id ?: $existingCard->card_id;
+            $oldCard->save();
+
+            // Update the existing card with new details and increment the version
+            $existingCard->update([
+                'card_name' => $request->input('card_name'),
+                'card_description' => $request->input('card_description'),
+                'deck_id' => $request->input('deck_id'),
+                'card_tier_id' => $request->input('card_tier_id'),
+                'card_version' => $existingCard->card_version + 1,
+                'parent_card_id' => $oldCard->parent_card_id,
+            ]);
+
+            return redirect()->route('cards.index')->with('updateSuccess', 'Card updated successfully.');
+        } catch (\Exception $e) {
+            // Log the error for debugging purposes
+            Log::error('Error updating card: ' . $e->getMessage());
+
+            // Redirect back with an error message
+            return redirect()->back()->with('updateError', 'There was an error updating the card. Please try again.');
+        }
+    }
+
+    public function destroy(Request $request,$card_id)
+    {
+        $card = Card::find($card_id);
+
+        if (!$card) {
+            return redirect()->route('cards.index')->with('deleteError', 'Card not found!');
+        }
+    
+        $card->delete();
+    
+        // Get the current page number
+        $page = $request->input('page', 1);
+    
+        // Retrieve the cards after deletion
+        $cards = Card::paginate(4, ['*'], 'page', $page);
+    
+        // If the current page is empty and it's not the first page, redirect to the previous page
+        if ($cards->isEmpty() && $page > 1) {
+            return redirect()->route('cards.index', ['page' => $page - 1])->with('deleteSuccess', 'Card has been deleted successfully!');
+        }
+    
+        return redirect()->route('cards.index', ['page' => $page])->with('deleteSuccess', 'Card has been deleted successfully!');
+    }
+
+    public function generateQrCode($card_id)
+    {
+
+        // Get the card information from the database
+        // $card = Card::find($card_id);
+        // Create QR code
+        $writer = new PngWriter();
+        $qrCode = QrCode::create($card_id)
+        ->setEncoding(new Encoding('UTF-8'))
+        ->setErrorCorrectionLevel(ErrorCorrectionLevel::Low)
+        ->setSize(70)
+        ->setMargin(5)
+        ->setRoundBlockSizeMode(RoundBlockSizeMode::Margin)
+        ->setForegroundColor(new Color(0, 0, 0))
+        ->setBackgroundColor(new Color(255, 255, 255));
+
+        $result = $writer->write($qrCode);
+            // Output the QR code as a PNG image
+        return response($result->getString(), 200, [
+            'Content-Type' => 'image/png',
+            'Content-Disposition' => 'inline; filename="qrcode.png"'
+        ]);
+    }
+
     public function search(Request $request)
     {
         $query = $request->input('query');

@@ -56,25 +56,25 @@ class DeckController extends Controller
         }
         return view('decks.show', compact('decks', 'cards'));
     }
-    public function edit(Deck $deck)
+    public function editDeck(Request $request, Deck $deck)
     {
-        return view('decks.index', compact('deck'));
-    }
-    public function update(Deck $deck)
-    {
+        // Validate and edit deck details
         $validatedData = $request->validate([
-            'deck_name' => 'required|string|max:255',
-            'deck_description' => 'nullable|string',
-            // Add any other validation rules for your deck fields
+            'deck_name' => 'string|max:255',
+            'deck_description' => 'string',
         ]);
 
         try {
             $deck->update($validatedData);
         } catch (\Exception $e) {
-            return redirect()->route('decks.edit', $deck)->with('error', 'Deck update failed!');
+            return redirect()->route('decks.index')->with('editError', 'Deck edit failed!');
         }
 
-        return redirect()->route('decks.index')->with('success', 'Deck updated successfully!');
+        return redirect()->route('decks.index')->with('editSuccess', 'Deck edit successfully.');
+    }
+    public function update(Deck $deck)
+    {
+        return redirect()->route('decks.index');
     }
     public function destroy(Request $request, $deck_id)
     {

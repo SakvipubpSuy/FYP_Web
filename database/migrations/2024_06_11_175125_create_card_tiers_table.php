@@ -11,13 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('cards', function (Blueprint $table) {
-            $table->id('card_id');
-            $table->unsignedInteger('deck_id');
-            $table->unsignedInteger('card_tier_id');
-            $table->string('card_name');
-            $table->text('card_description');
-            $table->string('card_version');
+        Schema::create('card_tiers', function (Blueprint $table) {
+            $table->id('card_tier_id');
+            $table->string('card_tier_name');
+            $table->integer('card_XP');
+            $table->integer('card_energy_required');
             $table->timestamps();
         });
     }
@@ -27,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('cards');
+        Schema::dropIfExists('card_tiers');
     }
 };

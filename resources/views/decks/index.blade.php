@@ -5,23 +5,24 @@
 <div class="container mx-auto px-5 mt-4 mb-4">
 
     <!-- This is success session for delete deck -->
-    @if(session('success'))
+    @if(session('editSuccess'))
         <div class="w-full px-3 mb-6">
             <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" style="background-color:lightgreen" role="alert">
                 <strong class="font-bold">Success!</strong>
-                <span class="block sm:inline">{{ session('success') }}</span>
-            </div>
-        </div>
-        @endif
-
-    @if(session('error'))
-        <div class="w-full px-3 mb-6">
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                <strong class="font-bold">Error!</strong>
-                <span class="block sm:inline">{{ session('error') }}</span>
+                <span class="block sm:inline">{{ session('editSuccess') }}</span>
             </div>
         </div>
     @endif
+
+    @if(session('editError'))
+        <div class="w-full px-3 mb-6">
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                <strong class="font-bold">Error!</strong>
+                <span class="block sm:inline">{{ session('editError') }}</span>
+            </div>
+        </div>
+    @endif
+
     <div class="flex justify-between items-center mb-4">
     <h2 class="text-2xl font-bold">Decks</h2>
         
@@ -59,10 +60,13 @@
                             <div>Number of Cards: {{ $deck->cards->count() }}</div>
                         </div>
                         <div class="flex items-center justify-center">
+                            <button type="button" class="text-black font-bold py-2 px-4 rounded" onclick="deckOpenEditModal({{$deck}})">
+                                <text> Edit </text>
+                            </button>
                             <form id="view-form-{{ $deck->deck_id }}" action="{{ route('decks.show', $deck->deck_id) }}" method="GET">
                                 <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2">View Deck</button>
                             </form>
-                            <button type="button" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onclick="openDeleteModal({{ $deck->deck_id }},{{ request()->input('page', 1) }})">Delete</button>
+                            <button type="button" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onclick="deckOpenDeleteModal({{ $deck->deck_id }},{{ request()->input('page', 1) }})">Delete</button>
                         </div>
                     </div>
                 </div>
@@ -70,6 +74,36 @@
         </div>
         {{ $decks->links() }}
     @endif
+</div>
+
+@endsection
+
+<!-- Edit Deck Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editModalLabel">Edit Card</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-form" method="POST" action="">
+          @csrf
+          @method('PUT')
+          <div class="mb-3">
+            <label for="edit-deck-name" class="form-label">Deck Name</label>
+            <input type="text" class="form-control" id="edit-deck-name" name="deck_name" required>
+          </div>
+          <div class="mb-3">
+            <label for="edit-deck-description" class="form-label">Deck Description</label>
+            <textarea class="form-control" id="edit-deck-description" name="deck_description" rows="3" required></textarea>
+          </div>
+          <input type="hidden" id="edit-deck-id" name="deck_id">
+          <button type="submit" class="btn btn-primary">Save changes</button>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
 <!-- Confirm Delete Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
@@ -96,26 +130,8 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" onclick="submitDeleteForm()">Delete</button>
+        <button type="button" class="btn btn-primary" onclick="deckSubmitDeleteForm()">Delete</button>
       </div>
     </div>
   </div>
 </div>
-@endsection
-
-@section('scripts')
-<script>
-    function openDeleteModal(deckId,page) {
-        document.getElementById('delete-deck-id').value = deckId;
-        var deleteForm = document.getElementById('delete-form');
-        deleteForm.action = '/decks/' + deckId;
-        document.getElementById('delete-form').elements.namedItem('page').value = page;
-        var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-        deleteModal.show();
-    }
-
-    function submitDeleteForm() {
-        document.getElementById('delete-form').submit();
-    }
-</script>
-@endsection

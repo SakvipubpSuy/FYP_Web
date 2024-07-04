@@ -19,7 +19,10 @@
     @livewireStyles
 </head>
 <body class="font-sans antialiased">
-   
+    <div id="loading-screen">
+        <div class="loading-spinner"></div>
+        <p>Loading...</p>
+    </div>
     <div class="min-h-screen bg-gray-100">
         @livewire('navigation-menu')
         <!-- Page Heading -->
@@ -45,5 +48,11 @@
     @livewireScripts
 
     @yield('scripts')
+    <script>
+        window.addEventListener('load', function() {
+          const loadingScreen = document.getElementById('loading-screen');
+          loadingScreen.style.display = 'none'; // Hide loading screen when page is loaded
+        });
+    </script>
 </body>
 </html>

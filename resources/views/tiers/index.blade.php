@@ -25,6 +25,7 @@
                     <th scope="col">Tier Name</th>
                     <th scope="col">Tier EXP</th>
                     <th scope="col">Energy Required</th>
+                    <th scope="col">Total Cards</th>
                 </tr>
             </thead>
             <tbody>
@@ -35,6 +36,7 @@
                     <td>{{ $cardtier->card_tier_name}}</td>
                     <td>{{ $cardtier->card_XP }}</td>
                     <td>{{ $cardtier->card_energy_required }}</td>
+                    <td>{{ $cardtier->cards->count() }}</td>
                 </tr>
                 @endforeach
             </tbody>

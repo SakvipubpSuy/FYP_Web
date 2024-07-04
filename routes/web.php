@@ -19,15 +19,14 @@ use App\Http\Controllers\TierController;
 */
 
 
-    Route::get('/', function () {
-        return view('test');
-    });
+// Route::get('/', function () {
+//     return view('test');
+// });
 
 
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
-    'verified',
 ])->group(function () {
 
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard.index');
@@ -37,6 +36,10 @@ Route::middleware([
     Route::get('cards/search',[CardController::class, 'search'])->name('cards.search');
     Route::get('/decks/{card_id}/qrcode', [CardController::class, 'generateQrCode'])->name('cards.qrcode');
     Route::get('/tiers/search',[TierController::class,'search'])->name('tiers.search');
+    Route::put('/cards/{card}/editCard', [CardController::class, 'editCard'])->name('cards.editCard');
+    Route::put('/cards/{card}/updateCard', [CardController::class, 'updateCard'])->name('cards.updateCard');
+    Route::put('/decks/{deck}/editDeck', [DeckController::class, 'editDeck'])->name('decks.editDeck');
+
     
     Route::resource('decks', DeckController::class);
     Route::resource('cards', CardController::class);
