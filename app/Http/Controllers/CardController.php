@@ -111,7 +111,27 @@ class CardController extends Controller
             return response()->json(['message' => 'An error occurred. Please try again later.'], 500);
         }
     }
-
+    public function getQuests()
+    {
+        $user = auth()->user();
+        $cards = $user->scannedCards; // Assuming you have a relationship defined
+        $quests = [];
+    
+        foreach ($cards as $card) {
+            $quests[] = [
+                'question' => $card->quest->question,
+                'answers' => $card->quest->answers->map(function ($answer) {
+                    return [
+                        'id' => $answer->id,
+                        'answer' => $answer->answer,
+                    ];
+                }),
+                'selectedAnswer' => null,
+            ];
+        }
+    
+        return response()->json($quests);
+    }
     //FOR WEB 
     public function index()
     {   
