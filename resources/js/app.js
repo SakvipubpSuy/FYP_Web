@@ -9,6 +9,7 @@ import {
     cardSubmitDeleteForm,
     cardOpenEditModal,
     cardOpenUpdateModal,
+    showQRCode,
 } from "./card";
 
 window.deckOpenDeleteModal = deckOpenDeleteModal;
@@ -18,3 +19,4 @@ window.cardOpenDeleteModal = cardOpenDeleteModal;
 window.cardSubmitDeleteForm = cardSubmitDeleteForm;
 window.cardOpenEditModal = cardOpenEditModal;
 window.cardOpenUpdateModal = cardOpenUpdateModal;
+window.showQRCode = showQRCode;
