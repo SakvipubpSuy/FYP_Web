@@ -294,17 +294,21 @@ class CardController extends Controller
         // Get the card information from the database
         // $card = Card::find($card_id);
         // Create QR code
-        $writer = new PngWriter();
-        $qrCode = QrCode::create($card_id)
-        ->setEncoding(new Encoding('UTF-8'))
-        ->setErrorCorrectionLevel(ErrorCorrectionLevel::Low)
-        ->setSize(70)
-        ->setMargin(5)
-        ->setRoundBlockSizeMode(RoundBlockSizeMode::Margin)
-        ->setForegroundColor(new Color(0, 0, 0))
-        ->setBackgroundColor(new Color(255, 255, 255));
-
-        $result = $writer->write($qrCode);
+        try {
+            $writer = new PngWriter();
+            $qrCode = QrCode::create($card_id)
+            ->setEncoding(new Encoding('UTF-8'))
+            ->setErrorCorrectionLevel(ErrorCorrectionLevel::Low)
+            ->setSize(500)
+            ->setMargin(5)
+            ->setRoundBlockSizeMode(RoundBlockSizeMode::Margin)
+            ->setForegroundColor(new Color(0, 0, 0))
+            ->setBackgroundColor(new Color(255, 255, 255));
+            
+            $result = $writer->write($qrCode);
+        } catch (\Exception $e) {
+            dd($e->getMessage());
+        }
             // Output the QR code as a PNG image
         return response($result->getString(), 200, [
             'Content-Type' => 'image/png',
