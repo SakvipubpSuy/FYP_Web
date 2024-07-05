@@ -315,7 +315,9 @@ class CardController extends Controller
     public function search(Request $request)
     {
         $query = $request->input('query');
+        $decks = Deck::all();
+        $cardTiers = CardTier::all();
         $cards = Card::where('card_name', 'LIKE', "%{$query}%")->paginate(4);
-        return view('cards.index', compact('cards'));
+        return view('cards.index', compact('cards','decks','cardTiers'));
     }
 }
