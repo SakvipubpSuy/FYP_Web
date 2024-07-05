@@ -19,7 +19,8 @@
         "laravel/tinker": "^2.8",
         "livewire/livewire": "^3.5",
         "ryangjchandler/blade-tabler-icons": "^2.3",
-        "twbs/bootstrap": "5.0.2"
+        "twbs/bootstrap": "5.0.2",
+        "ext-gd": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
