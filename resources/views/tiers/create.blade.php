@@ -63,7 +63,7 @@
         <div class="flex flex-wrap -mx-3 mb-2">
           <div class="w-full px-3">
             <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-              Add Card
+              Add Tier
             </button>
           </div>
         </div>
