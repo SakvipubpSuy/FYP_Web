@@ -161,8 +161,7 @@ class CardController extends Controller
             'deck_id' => 'required|exists:decks,deck_id',
             'card_description' => 'required|string',
             'question' => 'required|string',
-            'answers' => 'required|array|min:2',
-            'answers.*.answer' => 'required|string',
+            'answers.*' => 'required|min:2',
             'is_correct' => 'required|integer',
         ]);
     
@@ -184,7 +183,7 @@ class CardController extends Controller
                     foreach ($request->answers as $index => $answer) {
                         Answer::create([
                             'question_id' => $question->question_id,
-                            'answer' => $answer['answer'],
+                            'answer' => $answer,
                             'is_correct' => $index == $request->is_correct ? 1 : 0,
                         ]);
                     }
@@ -195,6 +194,7 @@ class CardController extends Controller
         } catch (\Exception $e) {
             // Log the error for debugging
             \Log::error('Card creation failed: ' . $e->getMessage());
+            dd($e->getMessage());
     
             return redirect()->route('cards.create')->with('error', 'Card creation failed!');
         }
