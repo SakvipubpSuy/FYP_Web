@@ -16,7 +16,7 @@
                     <div class="px-6 py-4">
                         <div class="flex items-center justify-between">
                             <div class="font-bold text-xl">{{ $card->card_name }}</div>
-                            <img src="{{ route('cards.qrcode', ['card_id' => $card->card_id]) }}" alt="QR Code">
+                            <button class="btn btn-primary" onclick="showQRCode('{{ route('cards.qrcode', ['card_id' => $card->card_id]) }}')">Show QR Code</button>
                         </div>
                         <p class="text-gray-700 text-base">{{ $card->card_description }}</p>
                     </div>
@@ -25,7 +25,7 @@
                             <div class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">Deck Name: {{ $card->deck->deck_name }}</div>
                         </div>
                         <div class="flex flex-wrap">
-                            <div class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">Card Tier: {{ $card->card_tier }}</div>
+                            <div class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">Card Tier: {{ $card->cardTier->card_tier_name }}</div>
                         </div>
                         <div class="flex flex-wrap">
                             <div class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">Card Version: {{ $card->card_version }}</div>
@@ -39,3 +39,17 @@
 </div>
 
 @endsection
+
+<!-- QR Code Modal -->
+<div class="modal fade" id="qrCodeModal" tabindex="-1" role="dialog" aria-labelledby="qrCodeModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="qrCodeModalLabel">QR Code</h5>
+            </div>
+            <div class="modal-body text-center">
+                <img id="qrCodeImage" src="" alt="QR Code">
+            </div>
+        </div>
+    </div>
+</div>
