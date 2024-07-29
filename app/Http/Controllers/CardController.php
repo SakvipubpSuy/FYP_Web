@@ -114,24 +114,76 @@ class CardController extends Controller
     public function getQuests()
     {
         $user = auth()->user();
-        $cards = $user->scannedCards; // Assuming you have a relationship defined
+        $cards = $user->cards()->with('question.answers')->get();
         $quests = [];
     
         foreach ($cards as $card) {
-            $quests[] = [
-                'question' => $card->quest->question,
-                'answers' => $card->quest->answers->map(function ($answer) {
-                    return [
-                        'id' => $answer->id,
-                        'answer' => $answer->answer,
-                    ];
-                }),
-                'selectedAnswer' => null,
-            ];
+            if ($card->question) {
+                $quests[] = [
+                    'question_id' => $card->question->question_id,
+                    'question' => $card->question->question,
+                    'answers' => $card->question->answers->map(function ($answer) {
+                        return [
+                            'answer_id' => $answer->answer_id,
+                            'answer' => $answer->answer,
+                            'is_correct' => $answer->is_correct,
+                        ];
+                    }),
+                ];
+            }
         }
     
         return response()->json($quests);
     }
+    public function submitQuest(Request $request)
+    {
+        $user = auth()->user();
+        $questionId = $request->input('question_id');
+        $answerId = $request->input('answer_id');
+    
+        $question = Question::find($questionId);
+        $answer = Answer::find($answerId);
+    
+        if (!$question || !$answer) {
+            return response()->json(['error' => 'Invalid question or answer'], 400);
+        }
+    
+        // Fetch the card associated with the question
+        $card = $question->card;
+    
+        if (!$card) {
+            return response()->json(['error' => 'Question is not associated with any card'], 400);
+        }
+    
+        // Fetch the card tier associated with the card
+        $cardTier = $card->cardTier;
+    
+        if (!$cardTier) {
+            return response()->json(['error' => 'Card is not associated with any card tier'], 400);
+        }
+    
+        $energyReward = $cardTier->card_energy_required; // Adjust this to match the field name in your database
+        $energyCap = 160;
+    
+        if ($answer->is_correct) {
+            // Reward user with energy associated with the card tier, ensuring it doesn't exceed the cap
+            $newEnergy = $user->energy + $energyReward;
+            $user->energy = min($newEnergy, $energyCap);
+            $user->save();
+    
+            return response()->json(['message' => 'Correct answer!', 'energy' => $user->energy], 200);
+        } else {
+            // Deduct energy for wrong answer, ensuring it doesn't go below zero
+            $user->energy = max(0, $user->energy - $energyReward);
+            $user->save();
+            return response()->json(['message' => 'Wrong answer!', 'energy' => $user->energy]);
+        }
+    }
+    
+
+    //////////////////////////////////////////////
+
+    //////////////////////////////////////////////
     //FOR WEB 
     public function index()
     {   

@@ -45,10 +45,11 @@ export function cardOpenUpdateModal(card) {
     myModal.show();
 }
 
-export function showQRCode(url) {
+export function showQRCode(url, cardName) {
     document.getElementById("qrCodeImage").src = url;
     $("#qrCodeModal").modal("show");
     $("#qrCodeModal").on("hidden.bs.modal", function (e) {
         $("#qrCodeImage").attr("src", ""); // Clear the QR code image when the modal is closed
     });
+    document.getElementById("cardName").innerText = cardName;
 }

@@ -15,7 +15,8 @@ class UserController extends Controller
      */
     public function getAllUsers()
     {
-        $users = User::all();
+        $users = User::select('id', 'name')->get();
+        $users->makeHidden(['profile_photo_url']);
         return response()->json($users);
     }
     public function getUser(Request $request)

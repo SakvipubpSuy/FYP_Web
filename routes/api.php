@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DeckController;
 use App\Http\Controllers\CardController;
+use App\Http\Controllers\TradeController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -31,4 +32,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/cards/{card_id}', [CardController::class, 'getCardByID']);
     Route::post('/scan-card', [CardController::class, 'scanCard']);
     Route::get('/user/total-cards', [CardController::class, 'countUserTotalCards']);
+    Route::get('/user/quests', [CardController::class, 'getQuests']);
+    Route::post('/user/submit-quest', [CardController::class, 'submitQuest']);
+    Route::post('/trade/send-trade-request', [TradeController::class, 'sendTradeRequest']); 
+    Route::get('/trade/count-trade-request', [TradeController::class, 'countTradeRequest']);
+    Route::get('/trade/trade-request', [TradeController::class, 'getTradeRequest']);
+    Route::post('/trade/accept-trade/{trade_id}', [TradeController::class, 'acceptTradeRequest']);
+    Route::delete('/trade/deny-trade/{trade_id}', [TradeController::class, 'denyTradeRequest']);
+    Route::delete('/trade/cancel-trade/{trade_id}', [TradeController::class, 'cancelTradeRequest']);
 });
