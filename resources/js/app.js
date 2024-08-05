@@ -11,6 +11,7 @@ import {
     cardOpenUpdateModal,
     showQRCode,
 } from "./card";
+import { tierOpenEditModal } from "./tier";
 
 window.deckOpenDeleteModal = deckOpenDeleteModal;
 window.deckSubmitDeleteForm = deckSubmitDeleteForm;
@@ -20,3 +21,4 @@ window.cardSubmitDeleteForm = cardSubmitDeleteForm;
 window.cardOpenEditModal = cardOpenEditModal;
 window.cardOpenUpdateModal = cardOpenUpdateModal;
 window.showQRCode = showQRCode;
+window.tierOpenEditModal = tierOpenEditModal;

@@ -40,4 +40,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/trade/accept-trade/{trade_id}', [TradeController::class, 'acceptTradeRequest']);
     Route::delete('/trade/deny-trade/{trade_id}', [TradeController::class, 'denyTradeRequest']);
     Route::delete('/trade/cancel-trade/{trade_id}', [TradeController::class, 'cancelTradeRequest']);
+    Route::post('/trade/complete-trade/{trade_id}', [TradeController::class, 'completeTradeRequest']);
+    Route::patch('/trade/revert-trade/{trade_id}', [TradeController::class, 'revertTradeRequest']);
 });

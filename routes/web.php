@@ -36,6 +36,7 @@ Route::middleware([
     Route::get('cards/search',[CardController::class, 'search'])->name('cards.search');
     Route::get('/decks/{card_id}/qrcode', [CardController::class, 'generateQrCode'])->name('cards.qrcode');
     Route::get('/tiers/search',[TierController::class,'search'])->name('tiers.search');
+    Route::put('/tiers/{tier}/editTier', [TierController::class, 'editTier'])->name('tiers.editTier');
     Route::put('/cards/{card}/editCard', [CardController::class, 'editCard'])->name('cards.editCard');
     Route::put('/cards/{card}/updateCard', [CardController::class, 'updateCard'])->name('cards.updateCard');
     Route::put('/decks/{deck}/editDeck', [DeckController::class, 'editDeck'])->name('decks.editDeck');

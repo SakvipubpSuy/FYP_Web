@@ -24,6 +24,7 @@ class TierController extends Controller
             'card_tier_name' => 'required|string|max:255',
             'card_XP' => 'required|integer|min:1|',
             'card_energy_required' => 'required|integer|min:1|',
+            'color' => 'required|string|max:7',
         ]);
         try {
             $cardtiers = CardTier::create($validatedData);
@@ -36,8 +37,18 @@ class TierController extends Controller
     public function show(){
         return view('tiers.show');
     }   
-    public function edit(){
-        return view('tiers.edit');
+    public function editTier(Request $request, $id){
+        $request->validate([
+            'card_tier_name' => 'required|string|max:255',
+            'card_XP' => 'required|integer',
+            'card_energy_required' => 'required|integer',
+            'color' => 'required|string|max:7',
+        ]);
+
+        $tier = CardTier::findOrFail($id);
+        $tier->update($request->all());
+
+        return redirect()->route('tiers.index')->with('success', 'Card tier updated successfully');
     }
     public function update(){
         return view('tiers.update');
