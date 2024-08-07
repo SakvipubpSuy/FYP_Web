@@ -178,7 +178,7 @@
         </div>
         <form id="edit-form" method="POST" action="">
           @csrf
-          @method('PUT')
+          @method('PATCH')
           <div class="mb-3">
             <label for="edit-card-name" class="form-label">Card Name</label>
             <input type="text" class="form-control" id="edit-card-name" name="card_name" required>

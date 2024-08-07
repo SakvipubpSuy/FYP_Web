@@ -62,7 +62,7 @@
       <div class="modal-body">
         <form id="edit-tier-form" method="POST">
           @csrf
-          @method('PUT')
+          @method('PATCH')
           <div class="mb-3">
             <label for="edit-card-tier-name" class="form-label">Tier Name</label>
             <input type="text" class="form-control" id="edit-card-tier-name" name="card_tier_name" required>

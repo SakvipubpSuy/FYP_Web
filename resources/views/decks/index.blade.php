@@ -89,7 +89,7 @@
       <div class="modal-body">
         <form id="edit-form" method="POST" action="">
           @csrf
-          @method('PUT')
+          @method('PATCH')
           <div class="mb-3">
             <label for="edit-deck-name" class="form-label">Deck Name</label>
             <input type="text" class="form-control" id="edit-deck-name" name="deck_name" required>
