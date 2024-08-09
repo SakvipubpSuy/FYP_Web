@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -204,7 +205,6 @@ class CardController extends Controller
 
     public function store(Request $request)
     {
-        // Debugging to see the request data
         // dd($request->all()); // Uncomment this line for debugging if needed
     
         $validatedData = $request->validate([
@@ -215,23 +215,43 @@ class CardController extends Controller
             'question' => 'required|string',
             'answers.*' => 'required|min:2',
             'is_correct' => 'required|integer',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', 
         ]);
-    
+        $img_url = null;
+        // Check if an image is uploaded
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = time() . '.' . $image->getClientOriginalExtension();
+        
+            // Upload the image to the Droplet
+            $response = Http::attach(
+                'fileToUpload', file_get_contents($image->getRealPath()), $imageName
+            )->post('http://157.245.50.75/upload.php');
+            
+            if ($response->successful()) {
+                $img_url = 'http://157.245.50.75/images/' . $imageName;
+            } else {
+                \Log::error('Upload failed: ' . $response->body());
+                return redirect()->route('cards.create')->with('error', 'Image upload failed');
+            }
+        }
+
         try {
-            DB::transaction(function () use ($request) {
+            DB::transaction(function () use ($request, $img_url) {
                 $card = Card::create([
                     'card_name' => $request->card_name,
                     'card_description' => $request->card_description,
                     'card_tier_id' => $request->card_tier_id,
                     'deck_id' => $request->deck_id,
+                    'img_url' => $img_url,
                 ]);
-    
+        
                 if ($request->question) {
                     $question = Question::create([
                         'card_id' => $card->card_id,
                         'question' => $request->question,
                     ]);
-    
+        
                     foreach ($request->answers as $index => $answer) {
                         Answer::create([
                             'question_id' => $question->question_id,
@@ -241,13 +261,13 @@ class CardController extends Controller
                     }
                 }
             });
-    
+        
             return redirect()->route('cards.create')->with('success', 'Card created successfully!');
         } catch (\Exception $e) {
             // Log the error for debugging
             \Log::error('Card creation failed: ' . $e->getMessage());
             dd($e->getMessage());
-    
+        
             return redirect()->route('cards.create')->with('error', 'Card creation failed!');
         }
     }

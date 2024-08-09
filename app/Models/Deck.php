@@ -12,6 +12,7 @@ class Deck extends Model
     protected $fillable = [
         'deck_name',
         'deck_description',
+        'img_url',
     ];
     public function cards()
     {

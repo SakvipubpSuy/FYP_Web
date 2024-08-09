@@ -15,6 +15,7 @@ class Card extends Model
         'card_name',
         'card_description',
         'card_version',
+        'img_url',
     ];
     protected $attributes = [
         'card_version' => 1,

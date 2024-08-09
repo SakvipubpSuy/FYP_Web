@@ -84,7 +84,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4 mb-4">
             @foreach ($cards as $card)
                 <div class="rounded overflow-hidden shadow-lg max-w-xs mx-auto">
-                    <img class="w-full h-48 object-cover" src="{{ asset('/images/Zhongli.jpg') }}" alt="Card Image">
+                  <img class="w-full h-48 object-cover" src="{{ $card->img_url ? asset($card->img_url) : asset('/images/Zhongli.jpg') }}" alt="Card Image">
                     <div class="px-6 py-4">
                         <div class="flex items-center justify-between">
                             <div class="font-bold text-xl">{{ $card->card_name }}</div>

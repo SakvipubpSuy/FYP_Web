@@ -7,6 +7,8 @@ use App\Http\Controllers\DeckController;
 use App\Http\Controllers\CardController;
 use App\Http\Controllers\TierController;
 
+
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -45,6 +47,6 @@ Route::middleware([
     Route::resource('decks', DeckController::class);
     Route::resource('cards', CardController::class);
     Route::resource('tiers', TierController::class);
-    
+
 });
 
