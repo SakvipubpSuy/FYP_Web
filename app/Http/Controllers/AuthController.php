@@ -21,7 +21,7 @@ class AuthController extends Controller
             'email' => 'required|string|email|max:255|unique:users,email',
             'password' => 'required|string|min:8|confirmed', // Ensure you have 'password_confirmation' field for this
         ]);
-    
+
         // Check if validation fails
         if ($validator->fails()) {
             return response()->json([
@@ -29,14 +29,14 @@ class AuthController extends Controller
                 'errors' => $validator->errors(),
             ], 422); // Unprocessable Entity
         }
-    
+
         // Proceed with user creation
         $createNewUser = new CreateNewUser();
         $user = $createNewUser->create($request->all());
-    
+
         // Generate a token for the newly registered user
         $token = $user->createToken('auth_token')->plainTextToken;
-    
+
         // Return user data and token
         return response()->json([
             'message' => 'User created successfully',
