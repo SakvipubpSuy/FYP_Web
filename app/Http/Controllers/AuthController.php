@@ -15,21 +15,6 @@ class AuthController extends Controller
 {
     public function register(Request $request)
     {
-        // Define validation rules
-        $validator = Validator::make($request->all(), [
-            'username' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email',
-            'password' => 'required|string|min:8', // Ensure you have 'password_confirmation' field for this
-        ]);
-
-        // Check if validation fails
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422); // Unprocessable Entity
-        }
-
         // Proceed with user creation
         $createNewUser = new CreateNewUser();
         $user = $createNewUser->create($request->all());
