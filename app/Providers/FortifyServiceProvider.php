@@ -31,8 +31,8 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {   
-        Fortify::createUsersUsing(CreateNewUser::class, 'user');
-        Fortify::createUsersUsing(CreateNewAdmin::class, 'admin');
+        Fortify::createUsersUsing(CreateNewUser::class);
+        Fortify::createUsersUsing(CreateNewAdmin::class);
         Fortify::updateUserProfileInformationUsing(UpdateAdminProfileInformation::class);
         Fortify::updateUserPasswordsUsing(UpdateAdminPassword::class);
         Fortify::resetUserPasswordsUsing(ResetAdminPassword::class);

@@ -12,7 +12,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4 mb-4">
             @foreach ($cards as $card)
                 <div class="rounded overflow-hidden shadow-lg max-w-xs mx-auto">
-                    <img class="w-full h-48 object-cover" src="{{ asset('/images/Zhongli.jpg') }}" alt="Card Image">
+                    <img class="w-full h-48 object-cover" src="{{ $card->img_url ? asset($card->img_url) : asset('/images/Zhongli.jpg') }}" alt="Card Image">
                     <div class="px-6 py-4">
                         <div class="flex items-center justify-between">
                             <div class="font-bold text-xl">{{ $card->card_name }}</div>
@@ -29,6 +29,9 @@
                         </div>
                         <div class="flex flex-wrap">
                             <div class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">Card Version: {{ $card->card_version }}</div>
+                        </div>
+                        <div class="flex flex-wrap">
+                            <div class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">Card EXP: {{ $card->cardTier->card_XP }}</div>
                         </div>
                     </div>
                 </div>

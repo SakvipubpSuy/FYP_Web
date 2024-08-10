@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -215,25 +216,24 @@ class CardController extends Controller
             'question' => 'required|string',
             'answers.*' => 'required|min:2',
             'is_correct' => 'required|integer',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', 
+            'card_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', 
         ]);
         $img_url = null;
         // Check if an image is uploaded
-        if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $imageName = time() . '.' . $image->getClientOriginalExtension();
-        
-            // Upload the image to the Droplet
-            $response = Http::attach(
-                'fileToUpload', file_get_contents($image->getRealPath()), $imageName
-            )->post('http://157.245.50.75/upload.php');
-            
-            if ($response->successful()) {
-                $img_url = 'http://157.245.50.75/images/' . $imageName;
-            } else {
-                \Log::error('Upload failed: ' . $response->body());
-                return redirect()->route('cards.create')->with('error', 'Image upload failed');
-            }
+        if ($request->hasFile('card_image')) {
+            $image = $request->file('card_image');
+            $cardname = $request->card_name;
+            $timestamp = time();
+            // $originalName = pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME);
+            $extension = $image->getClientOriginalExtension();
+            $imageName = $cardname . '_' . $timestamp . '.' . $extension;
+            $imagePath = 'card-img/' . $imageName; //'card-img/' . $imageName to specify the directory or folder later on
+    
+            // Store the image using the storage disk
+            Storage::disk('remote')->put($imagePath, file_get_contents($image->getRealPath()));
+    
+            // Generate the image URL
+            $img_url = Storage::disk('remote')->url($imagePath);
         }
 
         try {
@@ -277,23 +277,53 @@ class CardController extends Controller
         return view('cards.index', compact('card'));
     }
 
-    public function editCard(Request $request,Card $card)
+    public function editCard(Request $request, Card $card)
     {
-        // Validate and edit card details without changing the version
+        // Validate the input
         $validatedData = $request->validate([
             'card_name' => 'string|max:255',
             'card_description' => 'string',
             'card_tier_id' => 'exists:card_tiers,card_tier_id',
             'deck_id' => 'exists:decks,deck_id',
+            'card_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
+        
+        // Handle image upload if present
+        $old_img_url = $card->img_url;
+        $img_url = $old_img_url;
+        if ($request->hasFile('card_image')) {
+            $image = $request->file('card_image');
+            $cardname = $request->card_name;
+            $timestamp = time();
+            // $originalName = pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME);
+            $extension = $image->getClientOriginalExtension();
+            $imageName = $cardname . '_' . $timestamp . '.' . $extension;
+            $imagePath = 'card-img/' . $imageName;
+            // Store the new image on the SFTP server
+            $path = $image->storeAs('', $imagePath, 'remote');
+            $img_url = Storage::disk('remote')->url($imagePath);
 
-        try {
-            $card->update($validatedData);
-        } catch (\Exception $e) {
-            return redirect()->route('cards.index')->with('editError', 'Card edit failed!');
+            // Delete the old image if it exists
+            if ($old_img_url) {
+                $oldImagePath = parse_url($old_img_url, PHP_URL_PATH);
+                $relativeImagePath = 'card-img/' . basename($oldImagePath);
+                if (Storage::disk('remote')->exists($relativeImagePath)) {
+                    Storage::disk('remote')->delete($relativeImagePath);
+                } else {
+                    \Log::info('Old image not found: ' . $relativeImagePath);
+                }
+            }
         }
 
-        return redirect()->route('cards.index')->with('editSuccess', 'Card edit successfully.');
+        try {
+            // Update the card details
+            $card->update(array_merge($validatedData, ['img_url' => $img_url]));
+
+            return redirect()->route('cards.index')->with('editSuccess', 'Card edit successfully.');
+        } catch (\Exception $e) {
+            \Log::error('Card update failed: ' . $e->getMessage());
+            return redirect()->route('cards.index')->with('editError', 'Card edit failed!');
+        }
     }
 
     public function updateCard(Request $request, Card $card)
@@ -305,8 +335,21 @@ class CardController extends Controller
                 'card_description' => 'required|string|max:255',
                 'deck_id' => 'exists:decks,deck_id',
                 'card_tier_id' => 'exists:card_tiers,card_tier_id',
+                'card_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             ]);
 
+            if ($request->hasFile('card_image')) {
+                $image = $request->file('card_image');
+                $cardname = $request->card_name;
+                $timestamp = time();
+                // $originalName = pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME);
+                $extension = $image->getClientOriginalExtension();
+                $imageName = $cardname . '_' . $timestamp . '.' . $extension;
+                $imagePath = 'card-img/' . $imageName;
+                // Store the new image on the SFTP server
+                $path = $image->storeAs('', $imagePath, 'remote');
+                $img_url = Storage::disk('remote')->url($imagePath);
+            }
             // Find the existing card
             $existingCard = Card::findOrFail($card->card_id);
 
@@ -324,6 +367,7 @@ class CardController extends Controller
                 'card_tier_id' => $request->input('card_tier_id'),
                 'card_version' => $existingCard->card_version + 1,
                 'parent_card_id' => $oldCard->parent_card_id,
+                'img_url' => $img_url,
             ]);
 
             return redirect()->route('cards.index')->with('updateSuccess', 'Card updated successfully.');
@@ -343,9 +387,17 @@ class CardController extends Controller
         if (!$card) {
             return redirect()->route('cards.index')->with('deleteError', 'Card not found!');
         }
-    
+        $old_img_url = $card->img_url;
+        if ($old_img_url) {
+            $oldImagePath = parse_url($old_img_url, PHP_URL_PATH);
+            $relativeImagePath = 'card-img/' . basename($oldImagePath);
+            if (Storage::disk('remote')->exists($relativeImagePath)) {
+                Storage::disk('remote')->delete($relativeImagePath);
+            } else {
+                \Log::info('Old image not found: ' . $relativeImagePath);
+            }
+        }
         $card->delete();
-    
         // Get the current page number
         $page = $request->input('page', 1);
     

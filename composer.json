@@ -20,6 +20,7 @@
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
         "league/flysystem-aws-s3-v3": "^3.28",
+        "league/flysystem-sftp-v3": "^3.28",
         "livewire/livewire": "^3.5",
         "ryangjchandler/blade-tabler-icons": "^2.3",
         "sociallydev/spaces-api": "^3.6",

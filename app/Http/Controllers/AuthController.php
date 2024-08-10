@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Actions\Fortify\CreateNewUser;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
@@ -14,10 +15,34 @@ class AuthController extends Controller
 {
     public function register(Request $request)
     {
+        // Define validation rules
+        $validator = Validator::make($request->all(), [
+            'username' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email',
+            'password' => 'required|string|min:8|confirmed', // Ensure you have 'password_confirmation' field for this
+        ]);
+    
+        // Check if validation fails
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422); // Unprocessable Entity
+        }
+    
+        // Proceed with user creation
         $createNewUser = new CreateNewUser();
         $user = $createNewUser->create($request->all());
     
-        return response()->json(['message' => 'User created successfully', 'user' => $user], 201);
+        // Generate a token for the newly registered user
+        $token = $user->createToken('auth_token')->plainTextToken;
+    
+        // Return user data and token
+        return response()->json([
+            'message' => 'User created successfully',
+            'user' => $user,
+            'token' => $token,
+        ], 201);
     }
     public function login(Request $request)
     {

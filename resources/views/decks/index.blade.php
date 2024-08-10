@@ -47,7 +47,7 @@
             @foreach ($decks as $deck)
                 <div class="max-w-2xl mx-4 sm:max-w-sm md:max-w-sm lg:max-w-sm xl:max-w-sm sm:mx-auto md:mx-auto lg:mx-auto xl:mx-auto mt-16 bg-white shadow-xl rounded-lg text-gray-900 ">
                     <div class="rounded-t-lg h-32 overflow-hidden">
-                        <img class="object-cover object-top w-full" src='https://images.unsplash.com/photo-1549880338-65ddcdfd017b?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0NTg5fQ' alt='Mountain'>
+                        <img class="object-cover object-top w-full" src="{{ $deck->img_url ? asset($deck->img_url) : asset('/images/Zhongli.jpg') }}" alt="Card Image">
                     </div>
                     <div class="text-center mt-2">
                         <h2 class="font-semibold">{{ $deck->deck_name }}</h2>
@@ -87,7 +87,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form id="edit-form" method="POST" action="">
+        <form id="edit-form" method="POST" action="" enctype="multipart/form-data">
           @csrf
           @method('PATCH')
           <div class="mb-3">
@@ -97,6 +97,16 @@
           <div class="mb-3">
             <label for="edit-deck-description" class="form-label">Deck Description</label>
             <textarea class="form-control" id="edit-deck-description" name="deck_description" rows="3" required></textarea>
+          </div>
+          <div class="flex flex-wrap -mx-3 mb-6">
+            <div class="w-full px-3">
+                <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="image">
+                    Upload Image
+                </label>
+                <input
+                  class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                  id="image" name="deck_image" type="file" accept="image/*">
+            </div>
           </div>
           <input type="hidden" id="edit-deck-id" name="deck_id">
           <button type="submit" class="btn btn-primary">Save changes</button>

@@ -176,7 +176,7 @@
             IMPORTANT: Edit means you are just changing some details and not update the card. Update the card will change the card version.
             To update the card, please click the Update button.
         </div>
-        <form id="edit-form" method="POST" action="">
+        <form id="edit-form" method="POST" action="" enctype="multipart/form-data">
           @csrf
           @method('PATCH')
           <div class="mb-3">
@@ -203,6 +203,13 @@
               @endforeach
             </select>
           </div>
+          <div class="mb-3">      
+            <label for="edit-card-image" class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
+              Card Image</label>
+            <input type="file" class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+            id="edit-card-image" name="card_image" accept="image/*">
+            <small class="form-text text-muted">Leave empty to keep the current image.</small>
+          </div>
           <input type="hidden" id="edit-card-id" name="card_id">
           <button type="submit" class="btn btn-primary">Save changes</button>
         </form>
@@ -224,7 +231,7 @@
             IMPORTANT: Updating the card, will increase card version. Older version won't be able to scan anymore. User that scan the QR code
             will get the latest version. Older version(s) will be available for trading.
         </div>
-        <form id="update-form" method="POST" action="">
+        <form id="update-form" method="POST" action="" enctype="multipart/form-data">
           @csrf
           @method('PUT')
           <div class="mb-3">
@@ -250,6 +257,13 @@
                 <option value="{{ $deck->deck_id }}">{{ $deck->deck_name }}</option>
               @endforeach
             </select>
+          </div>
+          <div class="mb-3">      
+            <label for="update-card-image" class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
+              Card Image</label>
+            <input type="file" class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+            id="update-card-image" name="card_image" accept="image/*">
+            <small class="form-text text-muted">Leave empty to keep the current image.</small>
           </div>
           <input type="hidden" id="update-card-id" name="card_id">
           <button type="submit" class="btn btn-primary">Proceed with update</button>

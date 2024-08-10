@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Deck;
 use App\Models\Card;
@@ -36,11 +37,34 @@ class DeckController extends Controller
         $validatedData = $request->validate([
             'deck_name' => 'required|string|max:255',
             'deck_description' => 'nullable|string',
+            'deck_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             // Add any other validation rules for your deck fields
         ]);
 
+        $img_url = null;
+        // Check if an image is uploaded
+        if ($request->hasFile('deck_image')) {
+            $image = $request->file('deck_image');
+            $timestamp = time();
+            $deck_name = $request->deck_name;
+            // $originalName = pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME);
+            $extension = $image->getClientOriginalExtension();
+            $imageName = $deck_name . '_' . $timestamp . '.' . $extension;
+            $imagePath = 'deck-img/' . $imageName; //'card-img/' . $imageName to specify the directory or folder later on
+    
+            // Store the image using the storage disk
+            Storage::disk('remote')->put($imagePath, file_get_contents($image->getRealPath()));
+    
+            // Generate the image URL
+            $img_url = Storage::disk('remote')->url($imagePath);
+        }
+
         try {
-            $deck = Deck::create($validatedData);
+            $deck = Deck::create([
+                'deck_name' => $validatedData['deck_name'],
+                'deck_description' => $validatedData['deck_description'],
+                'img_url' => $img_url,
+            ]);
         } catch (\Exception $e) {
             return redirect()->route('decks.create')->with('error', 'Deck creation failed!');
         }
@@ -62,10 +86,35 @@ class DeckController extends Controller
         $validatedData = $request->validate([
             'deck_name' => 'string|max:255',
             'deck_description' => 'string',
+            'deck_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
+        $old_img_url = $deck->img_url;
+        $img_url = $old_img_url;
+        if ($request->hasFile('deck_image')) {
+            $image = $request->file('deck_image');
+            $deckname = $request->deck_name;
+            $timestamp = time();
+            // $originalName = pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME);
+            $extension = $image->getClientOriginalExtension();
+            $imageName = $deckname . '_' . $timestamp . '.' . $extension;
+            $imagePath = 'deck-img/' . $imageName;
+            // Store the new image on the SFTP server
+            $path = $image->storeAs('', $imagePath, 'remote');
+            $img_url = Storage::disk('remote')->url($imagePath);
 
+            // Delete the old image if it exists
+            if ($old_img_url) {
+                $oldImagePath = parse_url($old_img_url, PHP_URL_PATH);
+                $relativeImagePath = 'deck-img/' . basename($oldImagePath);
+                if (Storage::disk('remote')->exists($relativeImagePath)) {
+                    Storage::disk('remote')->delete($relativeImagePath);
+                } else {
+                    \Log::info('Old image not found: ' . $relativeImagePath);
+                }
+            }
+        }
         try {
-            $deck->update($validatedData);
+            $deck->update(array_merge($validatedData, ['img_url' => $img_url]));
         } catch (\Exception $e) {
             return redirect()->route('decks.index')->with('editError', 'Deck edit failed!');
         }
@@ -94,7 +143,16 @@ class DeckController extends Controller
             if (!$deck) {
                 return redirect()->route('decks.index')->with('error', 'Deck not found!');
             }
-        
+            $old_img_url = $deck->img_url;
+            if ($old_img_url) {
+                $oldImagePath = parse_url($old_img_url, PHP_URL_PATH);
+                $relativeImagePath = 'deck-img/' . basename($oldImagePath);
+                if (Storage::disk('remote')->exists($relativeImagePath)) {
+                    Storage::disk('remote')->delete($relativeImagePath);
+                } else {
+                    \Log::info('Old image not found: ' . $relativeImagePath);
+                }
+            }
             $deck->delete();
         
             // Check if there are decks on the current page
