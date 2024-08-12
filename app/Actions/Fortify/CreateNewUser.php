@@ -19,21 +19,13 @@ class CreateNewUser implements CreatesNewUsers
      */
     public function create(array $input): User
     {
-        $validator = Validator::make($input, [
+        Validator::make($input, [
             'name' => ['required', 'string', 'max:255', 'unique:users'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8'],
             'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
-        ]);
-    
-        if ($validator->fails()) {
-            // Return a response with validation errors
-            return response()->json([
-                'status' => 'error',
-                'message' => $validator->errors()->first(),
-            ], 422); // 422 Unprocessable Entity
-        }
-    
+        ])->validate();
+
         return User::create([
             'name' => $input['name'],
             'email' => $input['email'],
