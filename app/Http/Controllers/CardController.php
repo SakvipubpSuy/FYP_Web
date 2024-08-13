@@ -300,15 +300,15 @@ class CardController extends Controller
             $imageName = $cardname . '_' . $timestamp . '.' . $extension;
             $imagePath = 'card-img/' . $imageName;
             // Store the new image on the SFTP server
-            $path = $image->storeAs('', $imagePath, 'remote');
-            $img_url = Storage::disk('remote')->url($imagePath);
+            $path = $image->storeAs('', $imagePath, 'public');
+            $img_url = Storage::disk('public')->url($imagePath);
 
             // Delete the old image if it exists
             if ($old_img_url) {
                 $oldImagePath = parse_url($old_img_url, PHP_URL_PATH);
                 $relativeImagePath = 'card-img/' . basename($oldImagePath);
-                if (Storage::disk('remote')->exists($relativeImagePath)) {
-                    Storage::disk('remote')->delete($relativeImagePath);
+                if (Storage::disk('public')->exists($relativeImagePath)) {
+                    Storage::disk('public')->delete($relativeImagePath);
                 } else {
                     \Log::info('Old image not found: ' . $relativeImagePath);
                 }
@@ -347,8 +347,8 @@ class CardController extends Controller
                 $imageName = $cardname . '_' . $timestamp . '.' . $extension;
                 $imagePath = 'card-img/' . $imageName;
                 // Store the new image on the SFTP server
-                $path = $image->storeAs('', $imagePath, 'remote');
-                $img_url = Storage::disk('remote')->url($imagePath);
+                $path = $image->storeAs('', $imagePath, 'public');
+                $img_url = Storage::disk('public')->url($imagePath);
             }
             // Find the existing card
             $existingCard = Card::findOrFail($card->card_id);

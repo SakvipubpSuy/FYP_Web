@@ -53,10 +53,10 @@ class DeckController extends Controller
             $imagePath = 'deck-img/' . $imageName; //'card-img/' . $imageName to specify the directory or folder later on
     
             // Store the image using the storage disk
-            Storage::disk('remote')->put($imagePath, file_get_contents($image->getRealPath()));
+            Storage::disk('public')->put($imagePath, file_get_contents($image->getRealPath()));
     
             // Generate the image URL
-            $img_url = Storage::disk('remote')->url($imagePath);
+            $img_url = Storage::disk('public')->url($imagePath);
         }
 
         try {
@@ -99,15 +99,15 @@ class DeckController extends Controller
             $imageName = $deckname . '_' . $timestamp . '.' . $extension;
             $imagePath = 'deck-img/' . $imageName;
             // Store the new image on the SFTP server
-            $path = $image->storeAs('', $imagePath, 'remote');
-            $img_url = Storage::disk('remote')->url($imagePath);
+            $path = $image->storeAs('', $imagePath, 'public');
+            $img_url = Storage::disk('public')->url($imagePath);
 
             // Delete the old image if it exists
             if ($old_img_url) {
                 $oldImagePath = parse_url($old_img_url, PHP_URL_PATH);
                 $relativeImagePath = 'deck-img/' . basename($oldImagePath);
-                if (Storage::disk('remote')->exists($relativeImagePath)) {
-                    Storage::disk('remote')->delete($relativeImagePath);
+                if (Storage::disk('public')->exists($relativeImagePath)) {
+                    Storage::disk('public')->delete($relativeImagePath);
                 } else {
                     \Log::info('Old image not found: ' . $relativeImagePath);
                 }
@@ -147,8 +147,8 @@ class DeckController extends Controller
             if ($old_img_url) {
                 $oldImagePath = parse_url($old_img_url, PHP_URL_PATH);
                 $relativeImagePath = 'deck-img/' . basename($oldImagePath);
-                if (Storage::disk('remote')->exists($relativeImagePath)) {
-                    Storage::disk('remote')->delete($relativeImagePath);
+                if (Storage::disk('public')->exists($relativeImagePath)) {
+                    Storage::disk('public')->delete($relativeImagePath);
                 } else {
                     \Log::info('Old image not found: ' . $relativeImagePath);
                 }

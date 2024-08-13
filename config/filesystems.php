@@ -56,14 +56,14 @@ return [
             'throw' => false,
         ],
 
-        'remote' => [
-            'driver' => 'sftp',
-            'host' => '157.245.50.75',
-            'username' => 'root',
-            'password' => 'sakvipubp1120Suy',
-            'root' => '/var/www/html/images', // This is where your images are stored
-            'url' => 'http://157.245.50.75/images',
-        ],
+        // 'remote' => [
+        //     'driver' => 'sftp',
+        //     'host' => '157.245.50.75',
+        //     'username' => 'root',
+        //     'password' => 'sakvipubp1120Suy',
+        //     'root' => '/var/www/html/images', // This is where your images are stored
+        //     'url' => 'http://157.245.50.75/images',
+        // ],
 
     ],
 
