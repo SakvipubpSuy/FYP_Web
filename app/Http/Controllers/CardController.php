@@ -230,10 +230,10 @@ class CardController extends Controller
             $imagePath = 'card-img/' . $imageName; //'card-img/' . $imageName to specify the directory or folder later on
     
             // Store the image using the storage disk
-            Storage::disk('remote')->put($imagePath, file_get_contents($image->getRealPath()));
+            Storage::disk('public')->put($imagePath, file_get_contents($image->getRealPath()));
     
             // Generate the image URL
-            $img_url = Storage::disk('remote')->url($imagePath);
+            $img_url = Storage::disk('public')->url($imagePath);
         }
 
         try {
@@ -391,8 +391,8 @@ class CardController extends Controller
         if ($old_img_url) {
             $oldImagePath = parse_url($old_img_url, PHP_URL_PATH);
             $relativeImagePath = 'card-img/' . basename($oldImagePath);
-            if (Storage::disk('remote')->exists($relativeImagePath)) {
-                Storage::disk('remote')->delete($relativeImagePath);
+            if (Storage::disk('public')->exists($relativeImagePath)) {
+                Storage::disk('public')->delete($relativeImagePath);
             } else {
                 \Log::info('Old image not found: ' . $relativeImagePath);
             }
