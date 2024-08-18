@@ -21,6 +21,9 @@ use App\Http\Controllers\TradeController;
 //Public Route
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/forget-password/request-reset-code', [AuthController::class, 'sendResetCode']);
+Route::post('/forget-password/verify-code', [AuthController::class, 'verifyResetCode']);
+Route::post('/forget-password/reset', [AuthController::class, 'resetPassword']);
 
 //Protected Route
 Route::middleware('auth:sanctum')->group(function () {

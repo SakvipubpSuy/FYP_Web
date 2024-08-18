@@ -62,4 +62,8 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Card::class, 'card_user', 'user_id', 'card_id');
     }
+    public function passwordReset()
+    {
+        return $this->hasOne(PasswordReset::class, 'email', 'email');
+    }
 }

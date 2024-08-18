@@ -25,6 +25,8 @@ use App\Http\Controllers\TierController;
 //     return view('test');
 // });
 
+Route::post('password/email', [AdminController::class, 'sendResetLinkEmail'])->name('admin.password.email');
+Route::post('password/reset', [AdminController::class, 'reset'])->name('admin.password.update');
 
 Route::middleware([
     'auth:sanctum',

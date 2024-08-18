@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewAdmin;
-use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetAdminPassword;
 use App\Actions\Fortify\UpdateAdminPassword;
 use App\Actions\Fortify\UpdateAdminProfileInformation;
@@ -31,7 +30,6 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {   
-        Fortify::createUsersUsing(CreateNewUser::class);
         Fortify::createUsersUsing(CreateNewAdmin::class);
         Fortify::updateUserProfileInformationUsing(UpdateAdminProfileInformation::class);
         Fortify::updateUserPasswordsUsing(UpdateAdminPassword::class);
