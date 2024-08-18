@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('password_resets', function (Blueprint $table) {
-            $table->string('email')->index();
+            $table->string('email')->primary();
             $table->string('code');
             $table->timestamp('created_at')->nullable();
         });
@@ -26,4 +26,3 @@ return new class extends Migration
         Schema::dropIfExists('password_resets');
     }
 };
-
