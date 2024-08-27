@@ -1,13 +1,8 @@
-<!-- Show all the cards here -->
 
 @extends('layouts.app')
 
-@section('content')
-
-<div class="container mx-auto px-5 mt-4 mb-4">
-
-    <!-- Delete success or error -->
-    @if(session('deleteSuccess'))
+<!-- Delete success or error -->
+@if(session('deleteSuccess'))
       <div class="w-full px-3 mb-6">
           <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" style="background-color:lightgreen" role="alert">
               <strong class="font-bold">Success!</strong>
@@ -63,6 +58,9 @@
       </div>
     @endif
 
+    @section('content')
+
+<div class="container mx-auto px-5 mt-4 mb-4">
     <div class="flex justify-between items-center mb-4">
         <h2 class="text-2xl font-bold">Cards</h2>
         <form method="GET" action="{{ route('cards.search') }}" class="mb-4">
@@ -84,48 +82,57 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4 mb-4">
             @foreach ($cards as $card)
                 <div class="rounded overflow-hidden shadow-lg max-w-xs mx-auto">
-                  <img class="w-full h-48 object-cover" src="{{ $card->img_url ? asset($card->img_url) : asset('/images/Zhongli.jpg') }}" alt="Card Image">
+                    <!-- Section 1: Image -->
+                    <img class="w-full h-48 object-cover" src="{{ $card->img_url ? asset($card->img_url) : asset('/images/Zhongli.jpg') }}" alt="Card Image">
+                    
+                    <!-- Section 2: Card Name + Description + QR Code -->
                     <div class="px-6 py-4">
-                        <div class="flex items-center justify-between">
-                            <div class="font-bold text-xl">{{ $card->card_name }}</div>
-                            <button class="btn btn-primary" onclick="showQRCode('{{ route('cards.qrcode', ['card_id' => $card->card_id]) }}' , '{{ $card->card_name}}')">Show QR Code</button>
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="font-bold text-xl truncate" title="{{ $card->card_name }}">{{ $card->card_name }}</div>
+                            <button class="btn btn-primary p-2" onclick="showQRCode('{{ route('cards.qrcode', ['card_id' => $card->card_id]) }}', '{{ $card->card_name}}')">
+                                <i class="fas fa-qrcode text-xl text-blue-500"></i>
+                            </button>
                         </div>
-                        <p class="text-gray-700 text-base">{{ $card->card_description }}</p>
+                        <p class="text-gray-700 text-base truncate" title="{{ $card->card_description }}">{{ $card->card_description }}</p>
                     </div>
+                    
+                    <!-- Section 3: Deck Name + Other Details -->
                     <div class="px-6 pt-4 pb-2">
-                        <div class="flex flex-wrap">
-                            <div class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">Deck Name: {{ $card->deck->deck_name }}</div>
+                        <div class="flex flex-wrap mb-2">
+                            <span class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2">Deck Name: {{ $card->deck->deck_name }}</span>
+                        </div>
+                        <div class="flex flex-wrap mb-2">
+                            <span class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2">Card Tier: {{ $card->cardTier->card_tier_name }}</span>
+                        </div>
+                        <div class="flex flex-wrap mb-2">
+                            <span class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2">Card Version: {{ $card->card_version }}</span>
                         </div>
                         <div class="flex flex-wrap">
-                            <div class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">Card Tier: {{ $card->cardTier->card_tier_name }}</div>
+                            <span class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2">Card EXP: {{ $card->cardTier->card_XP }}</span>
                         </div>
-                        <div class="flex flex-wrap">
-                            <div class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">Card Version: {{ $card->card_version }}</div>
-                        </div>
-                        <div class="flex flex-wrap">
-                            <div class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">Card EXP: {{ $card->cardTier->card_XP }}</div>
-                        </div>
-                        <div class="flex items-center justify-center ">
-                            <!-- Edit Button -->
-                            <button type="button" class="text-black font-bold py-2 px-4 rounded" onclick="cardOpenEditModal({{$card}})">
-                                <text> Edit </text>
-                            </button>
-                            <!-- Delete Button -->
-                            <button type="button" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onclick="cardOpenDeleteModal({{ $card->card_id }},{{ request()->input('page', 1) }})">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-trash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                    <path d="M4 7l16 0" />
-                                    <path d="M10 11l0 6" />
-                                    <path d="M14 11l0 6" />
-                                    <path d="M5 7l1 12a2 2 0 0 0 2 2l8 0a2 2 0 0 0 2 -2l1 -12" />
-                                    <path d="M9 7l0 -3a1 1 0 0 1 1 -1l4 0a1 1 0 0 1 1 1l0 3" />
-                                </svg>
-                            </button>
-                            <!-- Update Button -->
-                            <button type="button" class="text-black font-bold py-2 px-4 rounded" onclick="cardOpenUpdateModal({{$card}})">
-                                <text> Update </text>
-                            </button>
-                        </div>
+                    </div>
+
+                    <!-- Section 4: Buttons -->
+                    <div class="px-6 pb-4 flex justify-between items-center">
+                        <!-- Edit Button -->
+                        <button type="button" class="text-black font-bold py-2 px-4 rounded" onclick="cardOpenEditModal({{ $card }})">
+                            Edit
+                        </button>
+                        <!-- Update Button -->
+                        <button type="button" class="text-black font-bold py-2 px-4 rounded" onclick="cardOpenUpdateModal({{ $card }})">
+                            Update
+                        </button>
+                        <!-- Delete Button -->
+                        <button type="button" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onclick="cardOpenDeleteModal({{ $card->card_id }}, {{ request()->input('page', 1) }})">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-trash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M4 7l16 0" />
+                                <path d="M10 11l0 6" />
+                                <path d="M14 11l0 6" />
+                                <path d="M5 7l1 12a2 2 0 0 0 2 2l8 0a2 2 0 0 0 2 -2l1 -12" />
+                                <path d="M9 7l0 -3a1 1 0 0 1 1 -1l4 0a1 1 0 0 1 1 1l0 3" />
+                            </svg>
+                        </button>
                     </div>
                 </div>
             @endforeach

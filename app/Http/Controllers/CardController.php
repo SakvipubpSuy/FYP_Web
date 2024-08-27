@@ -44,7 +44,7 @@ class CardController extends Controller
     }
     public function getCardByID($card_id)
     {
-        // Fetch cards that belong to the specified deck
+        // Fetch cards 
         $card = Card::with('cardTier')->find($card_id);
 
         // Check if the card exists

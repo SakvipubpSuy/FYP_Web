@@ -11,6 +11,15 @@ use App\Models\CardTier;
 
 class TierController extends Controller
 {
+    //FOR API 
+    public function getTiers(Request $request)
+    {   
+        $cardtiers = CardTier::get();
+        return response()->json($cardtiers);
+    }
+
+    
+    //FOR WEB
     public function index()
     {   
         $cardtiers = CardTier::paginate(5);

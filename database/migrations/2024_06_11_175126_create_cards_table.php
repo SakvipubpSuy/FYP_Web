@@ -20,7 +20,8 @@ return new class extends Migration
             $table->text('card_description');
             $table->integer('card_version')->default(1);
             $table->timestamps();
-        
+            
+            //deck_id foreign key already exists, accidentally put in create_deck_table
             $table->foreign('card_tier_id')->references('card_tier_id')->on('card_tiers')->onDelete('cascade');
             $table->foreign('parent_card_id')->references('card_id')->on('cards')->onDelete('cascade');
         });

@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\DeckController;
 use App\Http\Controllers\CardController;
 use App\Http\Controllers\TradeController;
+use App\Http\Controllers\TierController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -31,6 +32,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users', [UserController::class, 'getAllUsers']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/decks', [DeckController::class, 'getDecks']);
+    Route::get('/tiers', [TierController::class, 'getTiers']);
     Route::get('/decks/{deck_id}/cards', [CardController::class, 'getCardsByDeckID']);
     Route::get('/cards/{card_id}', [CardController::class, 'getCardByID']);
     Route::post('/scan-card', [CardController::class, 'scanCard']);

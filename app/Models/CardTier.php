@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class CardTier extends Model
 {
     use HasFactory;
+    protected $table = 'card_tiers';
     protected $primaryKey = 'card_tier_id';
     protected $fillable = [
         'card_tier_name',

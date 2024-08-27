@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
+
 @section('content')
 
 <div class="container mx-auto px-5 mt-4 mb-4">
-
     <!-- This is success session for delete deck -->
     @if(session('editSuccess'))
         <div class="w-full px-3 mb-6">
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" style="background-color:lightgreen" role="alert">
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
                 <strong class="font-bold">Success!</strong>
                 <span class="block sm:inline">{{ session('editSuccess') }}</span>
             </div>
@@ -24,7 +24,7 @@
     @endif
 
     <div class="flex justify-between items-center mb-4">
-    <h2 class="text-2xl font-bold">Decks</h2>
+        <h2 class="text-2xl font-bold">Decks</h2>
         
         <!-- Search Form -->
         <form method="GET" action="{{ route('decks.search') }}" class="mb-4">
@@ -43,31 +43,35 @@
     @if ($decks->isEmpty())
         <p>No decks found.</p>
     @else
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4 mb-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             @foreach ($decks as $deck)
-                <div class="max-w-2xl mx-4 sm:max-w-sm md:max-w-sm lg:max-w-sm xl:max-w-sm sm:mx-auto md:mx-auto lg:mx-auto xl:mx-auto mt-16 bg-white shadow-xl rounded-lg text-gray-900 ">
-                    <div class="rounded-t-lg h-32 overflow-hidden">
-                        <img class="object-cover object-top w-full" src="{{ $deck->img_url ? asset($deck->img_url) : asset('/images/Zhongli.jpg') }}" alt="Card Image">
+                <div class="bg-white shadow-lg rounded-lg text-gray-900 p-4 flex flex-col justify-between">
+                    <!-- Image Section -->
+                    <div class="h-32 overflow-hidden rounded-t-lg">
+                        <img class="object-cover w-full h-full" src="{{ $deck->img_url ? asset($deck->img_url) : asset('/images/Zhongli.jpg') }}" alt="Card Image">
                     </div>
-                    <div class="text-center mt-2">
-                        <h2 class="font-semibold">{{ $deck->deck_name }}</h2>
-                        <p class="text-gray-500">{{ $deck->deck_description }}</p>
+                    <!-- Deck Name & Description Section -->
+                    <div class="mt-2 flex-1">
+                        <h2 class="font-semibold text-lg truncate">{{ $deck->deck_name }}</h2>
+                        <p class="text-gray-500 text-sm truncate">{{ $deck->deck_description }}</p>
                     </div>
-                    <div class="py-4 mt-2 text-gray-700 text-center">
-                        <div class="flex items-center justify-center mb-4">
+                    <!-- Number of Cards Section -->
+                    <div class="py-2 mt-2 text-gray-700 text-center">
+                        <div class="flex items-center justify-center">
                             <!-- Playing Card Icon SVG -->
-                            <x-tabler-cards class="w-4 fill-current text-blue-900" />
+                            <x-tabler-cards class="w-4 fill-current text-blue-900 mr-2" />
                             <div>Number of Cards: {{ $deck->cards->count() }}</div>
                         </div>
-                        <div class="flex items-center justify-center">
-                            <button type="button" class="text-black font-bold py-2 px-4 rounded" onclick="deckOpenEditModal({{$deck}})">
-                                <text> Edit </text>
-                            </button>
-                            <form id="view-form-{{ $deck->deck_id }}" action="{{ route('decks.show', $deck->deck_id) }}" method="GET">
-                                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2">View Deck</button>
-                            </form>
-                            <button type="button" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onclick="deckOpenDeleteModal({{ $deck->deck_id }},{{ request()->input('page', 1) }})">Delete</button>
-                        </div>
+                    </div>
+                    <!-- Buttons Section -->
+                    <div class="flex flex-col justify-between">
+                        <button type="button" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded" onclick="deckOpenEditModal({{$deck}})">
+                            Edit
+                        </button>
+                        <form id="view-form-{{ $deck->deck_id }}" action="{{ route('decks.show', $deck->deck_id) }}" method="GET">
+                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">View Deck</button>
+                        </form>
+                        <button type="button" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onclick="deckOpenDeleteModal({{ $deck->deck_id }},{{ request()->input('page', 1) }})">Delete</button>
                     </div>
                 </div>
             @endforeach
