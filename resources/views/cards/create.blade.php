@@ -1,35 +1,5 @@
 @extends('layouts.app')
 
-
-@section('scripts')
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            var q_index = 0;
-            $('#add-answer').click(function() {
-                ++q_index;
-                $('#answers').append(
-                    `
-                <div class="w-full px-3 answer_body mt-1">
-                    <div class="answer">
-                        <input type="text" name="answers[${q_index}]" required>
-                        <input type="radio" class="mr-1" name="is_correct" value="${q_index}"> Correct
-                        <button type="button" class="btn btn-danger ml-2 remove-answer">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
-                    </div>
-                </div>
-                `
-                );
-            });
-
-            $(document).on('click', '.remove-answer', function() {
-                $(this).parents('div.answer_body').remove();
-            });
-        });
-    </script>
-@endsection
-
 @section('content')
     <div class="container mx-auto px-5 mt-4 mb-4">
         <h2 class="text-2xl font-bold mt-4 mb-4">Add a new card</h2>
@@ -162,22 +132,51 @@
     </div>
 </form>
 
-    <!-- Success Modal -->
-    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="successModalLabel">Success</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    {{ session('success') }}
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" id="successModalOkButton">OK</button>
-                </div>
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="successModalLabel">Success</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {{ session('success') }}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="successModalOkButton">OK</button>
             </div>
         </div>
     </div>
+</div>
 
+@endsection
+
+@section('scripts')
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            var q_index = 0;
+            $('#add-answer').click(function() {
+                ++q_index;
+                $('#answers').append(
+                    `
+                <div class="w-full px-3 answer_body mt-1">
+                    <div class="answer">
+                        <input type="text" name="answers[${q_index}]" required>
+                        <input type="radio" class="mr-1" name="is_correct" value="${q_index}"> Correct
+                        <button type="button" class="btn btn-danger ml-2 remove-answer">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+                `
+                );
+            });
+
+            $(document).on('click', '.remove-answer', function() {
+                $(this).parents('div.answer_body').remove();
+            });
+        });
+    </script>
 @endsection

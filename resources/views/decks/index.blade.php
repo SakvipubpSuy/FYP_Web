@@ -5,78 +5,110 @@
 
 <div class="container mx-auto px-5 mt-4 mb-4">
     <!-- This is success session for delete deck -->
+    @if(session('deleteSuccess'))
+        <div class="w-full px-3 mb-6">
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <strong class="font-bold">Success!</strong>
+                <div>{{ session('deleteSuccess') }}</div>
+            </div>
+        </div>
+    @endif
+    <!-- This is success and error session for edit deck -->
     @if(session('editSuccess'))
         <div class="w-full px-3 mb-6">
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <strong class="font-bold">Success!</strong>
-                <span class="block sm:inline">{{ session('editSuccess') }}</span>
+                <div>{{ session('editSuccess') }}</div>
             </div>
         </div>
     @endif
 
     @if(session('editError'))
         <div class="w-full px-3 mb-6">
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 <strong class="font-bold">Error!</strong>
-                <span class="block sm:inline">{{ session('editError') }}</span>
+                <div>{{ session('editError') }}</div>
             </div>
         </div>
     @endif
 
     <div class="flex justify-between items-center mb-4">
-        <h2 class="text-2xl font-bold">Decks</h2>
-        
-        <!-- Search Form -->
-        <form method="GET" action="{{ route('decks.search') }}" class="mb-4">
+    <h2 class="text-2xl font-bold">Decks</h2>
+      <div class="flex space-x-4">
+          <a href="{{ route('reputation-titles.index') }}" class="btn btn-primary">
+              Reputation System
+          </a>
+          <a href="{{ route('decks.create') }}" class="btn btn-primary ml-2">
+              Add Deck
+          </a>
+      </div>
+    </div>
+
+    <!-- Search Form -->
+    <form method="GET" action="{{ route('decks.search') }}" class="mb-4">
             <div class="flex">
                 <input type="text" name="query" placeholder="Search decks..." class="w-full px-4 py-2 border rounded" value="{{ request('query') }}">
-                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-2">
+                <button type="submit" class="btn btn-primary py-2 px-4 rounded ml-2">
                     Search
                 </button>
             </div>
-        </form>
-        <a href="{{ route('decks.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
-            Add Deck
-        </a>
-    </div>
-
+    </form>
+    
     @if ($decks->isEmpty())
         <p>No decks found.</p>
     @else
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            @foreach ($decks as $deck)
-                <div class="bg-white shadow-lg rounded-lg text-gray-900 p-4 flex flex-col justify-between">
-                    <!-- Image Section -->
-                    <div class="h-32 overflow-hidden rounded-t-lg">
-                        <img class="object-cover w-full h-full" src="{{ $deck->img_url ? asset($deck->img_url) : asset('/images/Zhongli.jpg') }}" alt="Card Image">
-                    </div>
-                    <!-- Deck Name & Description Section -->
-                    <div class="mt-2 flex-1">
-                        <h2 class="font-semibold text-lg truncate">{{ $deck->deck_name }}</h2>
-                        <p class="text-gray-500 text-sm truncate">{{ $deck->deck_description }}</p>
-                    </div>
-                    <!-- Number of Cards Section -->
-                    <div class="py-2 mt-2 text-gray-700 text-center">
-                        <div class="flex items-center justify-center">
-                            <!-- Playing Card Icon SVG -->
-                            <x-tabler-cards class="w-4 fill-current text-blue-900 mr-2" />
-                            <div>Number of Cards: {{ $deck->cards->count() }}</div>
-                        </div>
-                    </div>
-                    <!-- Buttons Section -->
-                    <div class="flex flex-col justify-between">
-                        <button type="button" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded" onclick="deckOpenEditModal({{$deck}})">
-                            Edit
-                        </button>
-                        <form id="view-form-{{ $deck->deck_id }}" action="{{ route('decks.show', $deck->deck_id) }}" method="GET">
-                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">View Deck</button>
-                        </form>
-                        <button type="button" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onclick="deckOpenDeleteModal({{ $deck->deck_id }},{{ request()->input('page', 1) }})">Delete</button>
-                    </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4 mb-4">
+          @foreach ($decks as $deck)
+              <div class="bg-white shadow-lg rounded-lg text-gray-900 p-4 flex flex-col justify-between">
+                  <!-- Image Section -->
+                <div class="h-32 overflow-hidden rounded-t-lg">
+                    <img class="object-cover w-full h-full" src="{{ $deck->img_url ? asset($deck->img_url) : asset('/images/no_img.jpg') }}" alt="Card Image">
                 </div>
-            @endforeach
+                <!-- Deck Name & Description Section -->
+                <div class="mt-2 flex-1">
+                    <h2 class="font-semibold text-lg truncate">{{ $deck->deck_name }}</h2>
+                    <p class="text-gray-500 text-sm truncate">{{ $deck->deck_description }}</p>
+                </div>
+                <!-- Number of Cards Section -->
+                <div class="py-2 mt-2 text-gray-700 text-center">
+                  <div class="flex items-center justify-center">
+                      <!-- Playing Card Icon SVG -->
+                      <x-tabler-cards class="w-4 fill-current text-blue-900 mr-2" />
+                      <div>Number of Cards: {{ $deck->cards->count() }}</div>
+                  </div>
+                </div>
+                <!-- Buttons Section -->
+                <div class="px-6 pb-4 flex justify-between items-center">                        
+                  <!-- Edit Button -->
+                  <button type="button" class="text-black font-bold py-2 px-4 rounded" onclick="deckOpenEditModal({{$deck}})">
+                      Edit
+                  </button>
+                  <!-- View Deck Button -->
+                  <form id="view-form-{{ $deck->deck_id }}" action="{{ route('decks.show', $deck->deck_id) }}" method="GET" class="m-0 p-0">
+                      <button type="submit" class="text-black font-bold py-2 px-4 rounded">
+                        View
+                      </button>
+                  </form>
+                  <!-- Row for Delete button -->
+                  @if (Auth::check() && Auth::user()->role === 'superadmin')
+                  <div>
+                      <button type="button" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onclick="deckOpenDeleteModal({{ $deck->deck_id }},{{ request()->input('page', 1) }})">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-trash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M4 7l16 0" />
+                            <path d="M10 11l0 6" />
+                            <path d="M14 11l0 6" />
+                            <path d="M5 7l1 12a2 2 0 0 0 2 2l8 0a2 2 0 0 0 2 -2l1 -12" />
+                            <path d="M9 7l0 -3a1 1 0 0 1 1 -1l4 0a1 1 0 0 1 1 1l0 3" />
+                        </svg>
+                      </button>
+                  </div>
+                    @endif
+                </div>
+            </div>
+          @endforeach
         </div>
-        {{ $decks->links() }}
+      {{ $decks->links() }}
     @endif
 </div>
 
@@ -149,3 +181,16 @@
     </div>
   </div>
 </div>
+
+@section('scripts')
+<script>
+    // Auto-hide alerts after 5 seconds
+    setTimeout(function() {
+        let alerts = document.querySelectorAll('.alert[role="alert"]');
+        alerts.forEach(alert => {
+            let bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        });
+    }, 5000); // this is in milliseconds, 1000ms = 1 second
+</script>
+@endsection

@@ -35,6 +35,11 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::updateUserPasswordsUsing(UpdateAdminPassword::class);
         Fortify::resetUserPasswordsUsing(ResetAdminPassword::class);
 
+        Fortify::registerView(function () {
+            abort(404, 'Not Found');
+        });
+        
+        
         RateLimiter::for('login', function (Request $request) {
             $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());
 
@@ -44,5 +49,6 @@ class FortifyServiceProvider extends ServiceProvider
         RateLimiter::for('two-factor', function (Request $request) {
             return Limit::perMinute(5)->by($request->session()->get('login.id'));
         });
+
     }
 }

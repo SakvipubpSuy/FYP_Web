@@ -1,173 +1,150 @@
 
 @extends('layouts.app')
 
-<!-- Delete success or error -->
-@if(session('deleteSuccess'))
-      <div class="w-full px-3 mb-6">
-          <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" style="background-color:lightgreen" role="alert">
-              <strong class="font-bold">Success!</strong>
-              <div>{{ session('deleteSuccess') }}</div>
-          </div>
-      </div>
-    @endif
+@section('content')
+    
+<div class="container mx-auto px-5 mt-4 mb-4">
 
-    @if(session('deleteError'))
-      <div class="w-full px-3 mb-6">
-          <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-              <strong class="font-bold">Error!</strong>
-              <div>{{ session('deleteError') }}</div>
-          </div>
-      </div>
-    @endif
+  <!-- Delete success or error -->
+  @if(session('deleteSuccess'))
+        <div class="w-full px-3 mb-6">
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <strong class="font-bold">Success!</strong>
+                <div>{{ session('deleteSuccess') }}</div>
+            </div>
+        </div>
+  @endif
 
-    <!-- Edit Sucess or Error -->
-    @if(session('editSuccess'))
-      <div class="w-full px-3 mb-6">
-          <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" style="background-color:lightgreen" role="alert">
-              <strong class="font-bold">Success!</strong>
-              <div>{{ session('editSuccess') }}</div>
-          </div>
-      </div>
-    @endif
-
-    @if(session('editError'))
-      <div class="w-full px-3 mb-6">
-          <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-              <strong class="font-bold">Error!</strong>
-              <div>{{ session('editError') }}</div>
-          </div>
-      </div>
-    @endif
+  @if(session('deleteError'))
+    <div class="w-full px-3 mb-6">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong class="font-bold">Error!</strong>
+            <div>{{ session('deleteError') }}</div>
+        </div>
+    </div>
+  @endif
 
     <!-- Update Sucess or Error -->
     @if(session('updateSuccess'))
-      <div class="w-full px-3 mb-6">
-          <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" style="background-color:lightgreen" role="alert">
-              <strong class="font-bold">Success!</strong>
-              <div>{{ session('updateSuccess') }}</div>
-          </div>
-      </div>
-    @endif
+    <div class="w-full px-3 mb-6">
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong class="font-bold">Success!</strong>
+            <div>{{ session('updateSuccess') }}</div>
+        </div>
+    </div>
+  @endif
 
-    @if(session('updateError'))
-      <div class="w-full px-3 mb-6">
-          <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-              <strong class="font-bold">Error!</strong>
-              <div>{{ session('updateError') }}</div>
-          </div>
-      </div>
-    @endif
+  @if(session('updateError'))
+    <div class="w-full px-3 mb-6">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong class="font-bold">Error!</strong>
+            <div>{{ session('updateError') }}</div>
+        </div>
+    </div>
+  @endif
 
-    @section('content')
+  <!-- Edit Sucess or Error -->
+  @if(session('editSuccess'))
+    <div class="w-full px-3 mb-6">
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong class="font-bold">Success!</strong>
+            <div>{{ session('editSuccess') }}</div>
+        </div>
+    </div>
+  @endif
 
-<div class="container mx-auto px-5 mt-4 mb-4">
+  @if(session('editError'))
+    <div class="w-full px-3 mb-6">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong class="font-bold">Error!</strong>
+            <div>{{ session('editError') }}</div>
+        </div>
+    </div>
+  @endif
+
     <div class="flex justify-between items-center mb-4">
         <h2 class="text-2xl font-bold">Cards</h2>
-        <form method="GET" action="{{ route('cards.search') }}" class="mb-4">
-            <div class="flex">
-                <input type="text" name="query" placeholder="Search cards..." class="w-full px-4 py-2 border rounded" value="{{ request('query') }}">
-                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-2">
-                    Search
-                </button>
-            </div>
-        </form>
-        <a href="{{ route('cards.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+        <a href="{{ route('cards.create') }}" class="btn btn-primary py-2 px-4 rounded ml-2">
         Add Card
         </a>
     </div>
+    <form method="GET" action="{{ route('cards.search') }}" class="mb-4">
+            <div class="flex">
+                <input type="text" name="query" placeholder="Search cards..." class="w-full px-4 py-2 border rounded" value="{{ request('query') }}">
+                <button type="submit" class="btn btn-primary py-2 px-4 rounded ml-2">
+                    Search
+                </button>
+            </div>
+    </form>
 
     @if ($cards->isEmpty())
         <p>No cards found.</p>
     @else
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4 mb-4">
-            @foreach ($cards as $card)
-                <div class="rounded overflow-hidden shadow-lg max-w-xs mx-auto">
-                    <!-- Section 1: Image -->
-                    <img class="w-full h-48 object-cover" src="{{ $card->img_url ? asset($card->img_url) : asset('/images/Zhongli.jpg') }}" alt="Card Image">
-                    
-                    <!-- Section 2: Card Name + Description + QR Code -->
-                    <div class="px-6 py-4">
-                        <div class="flex items-center justify-between mb-2">
-                            <div class="font-bold text-xl truncate" title="{{ $card->card_name }}">{{ $card->card_name }}</div>
-                            <button class="btn btn-primary p-2" onclick="showQRCode('{{ route('cards.qrcode', ['card_id' => $card->card_id]) }}', '{{ $card->card_name}}')">
-                                <i class="fas fa-qrcode text-xl text-blue-500"></i>
-                            </button>
-                        </div>
-                        <p class="text-gray-700 text-base truncate" title="{{ $card->card_description }}">{{ $card->card_description }}</p>
-                    </div>
-                    
-                    <!-- Section 3: Deck Name + Other Details -->
-                    <div class="px-6 pt-4 pb-2">
-                        <div class="flex flex-wrap mb-2">
-                            <span class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2">Deck Name: {{ $card->deck->deck_name }}</span>
-                        </div>
-                        <div class="flex flex-wrap mb-2">
-                            <span class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2">Card Tier: {{ $card->cardTier->card_tier_name }}</span>
-                        </div>
-                        <div class="flex flex-wrap mb-2">
-                            <span class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2">Card Version: {{ $card->card_version }}</span>
-                        </div>
-                        <div class="flex flex-wrap">
-                            <span class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2">Card EXP: {{ $card->cardTier->card_XP }}</span>
-                        </div>
-                    </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4 mb-4">
+        @foreach ($cards as $card)
+            <div class="bg-white shadow-lg rounded-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                <!-- Section 1: Image -->
+                <div class="relative">
+                    <img class="w-full h-48 object-cover" src="{{ $card->img_url ? asset($card->img_url) : asset('/images/no_img.jpg') }}" alt="Card Image">
+                    <!-- QR Code Icon Button (floating over the image) -->
+                    <button class="absolute top-2 right-2 bg-white text-gray-700 p-2 rounded-full shadow hover:bg-gray-100 transition" onclick="toggleQRCode(this, '{{ $card->qr_code_path }}', '{{ $card->card_name }}')">
+                        <i class="fas fa-qrcode"></i>
+                    </button>
+                </div>
 
-                    <!-- Section 4: Buttons -->
-                    <div class="px-6 pb-4 flex justify-between items-center">
-                        <!-- Edit Button -->
-                        <button type="button" class="text-black font-bold py-2 px-4 rounded" onclick="cardOpenEditModal({{ $card }})">
-                            Edit
-                        </button>
-                        <!-- Update Button -->
-                        <button type="button" class="text-black font-bold py-2 px-4 rounded" onclick="cardOpenUpdateModal({{ $card }})">
-                            Update
-                        </button>
-                        <!-- Delete Button -->
-                        <button type="button" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onclick="cardOpenDeleteModal({{ $card->card_id }}, {{ request()->input('page', 1) }})">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-trash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                <path d="M4 7l16 0" />
-                                <path d="M10 11l0 6" />
-                                <path d="M14 11l0 6" />
-                                <path d="M5 7l1 12a2 2 0 0 0 2 2l8 0a2 2 0 0 0 2 -2l1 -12" />
-                                <path d="M9 7l0 -3a1 1 0 0 1 1 -1l4 0a1 1 0 0 1 1 1l0 3" />
-                            </svg>
-                        </button>
+                <!-- Section 2: Card Name + Description -->
+                <div class="p-4">
+                    <h3 class="font-bold text-lg truncate" title="{{ $card->card_name }}">{{ $card->card_name }}</h3>
+                    <p class="text-gray-600 text-sm truncate mb-3" title="{{ $card->card_description }}">{{ $card->card_description }}</p>
+                </div>
+
+                <!-- Section 3: Card Details -->
+                <div class="px-4 py-2 bg-gray-100">
+                    <div class="flex flex-col mb-2">
+                        <span class="text-sm font-semibold text-gray-700">Deck Name: {{ $card->deck->deck_name }}</span>
+                        <span class="text-sm font-semibold text-gray-700">Card Tier: {{ $card->cardTier->card_tier_name }}</span>
+                        <span class="text-sm font-semibold text-gray-700">Card Version: {{ $card->card_version }}</span>
+                        <span class="text-sm font-semibold text-gray-700">Card EXP: {{ $card->cardTier->card_XP }}</span>
                     </div>
                 </div>
-            @endforeach
-        </div>
-        {{ $cards->links() }}
+
+              <!-- Section 4: Action Buttons -->
+              <div class="px-2 py-2 flex flex-wrap justify-center items-center bg-gray-100 gap-2 ">
+                  <!-- Edit Button -->
+                  <button class="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition min-w-[100px]" onclick="cardOpenEditModal({{ $card }},{{ $card->question }})">
+                      Edit
+                  </button>
+                  <!-- Update Button -->
+                  <button class="bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-600 transition min-w-[100px]" onclick="cardOpenUpdateModal({{ $card }},{{ $card->question }})">
+                      Update
+                  </button>
+                  <!-- Delete Button (Superadmin only) -->
+                  @if (Auth::check() && Auth::user()->role === 'superadmin')
+                  <button class="bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600 transition min-w-[100px]" onclick="cardOpenDeleteModal({{ $card->card_id }}, {{ request()->input('page', 1) }})">
+                      Delete
+                  </button>
+                  @endif
+              </div>
+            </div>
+        @endforeach
+      </div>
+      {{ $cards->links() }}
     @endif
 </div>
 @endsection
 
-<!-- Confirm Delete Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form id="delete-form" method="POST">
-          @csrf
-          @method('DELETE')
-          <div class="text-danger mt-3">
-            Warning: This will delete the selected card. If you delete the latest version, all others versions will be deleted as well. 
-            This action cannot be undone.
-          </div>
-          <input type="hidden" id="delete-card-id" name="card_id">
-          <input type="hidden" name="page" value="{{ request()->input('page', 1) }}">
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" onclick="cardSubmitDeleteForm()">Delete</button>
-      </div>
+<!-- QR Code Modal -->
+<div id="qrCodeModal" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50">
+    <div class="relative bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+        <!-- Close Button Inside the Modal -->
+        <button class="text-gray-500 absolute top-4 right-4" onclick="closeQRCodeModal()">&#x2715;</button>
+        
+        <!-- Card Name -->
+        <h3 id="qrCodeCardName" class="text-center text-lg font-semibold mb-4"></h3>
+        
+        <!-- QR Code Image -->
+        <img id="qrCodeImage" src="" alt="QR Code" class="w-64 h-64 mx-auto">
     </div>
-  </div>
 </div>
 
 <!-- Edit Modal -->
@@ -210,6 +187,28 @@
               @endforeach
             </select>
           </div>
+
+          <div class="flex flex-wrap -mx-3 mb-6">
+            <div class="w-full px-3">
+                <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="edit_question">
+                    Question
+                </label>
+                <textarea
+                  class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                  id="edit_question" name="edit_question" placeholder="Question" required>{{ old('edit_question') }}
+                </textarea>
+            </div>
+          </div>
+
+          <div class="ml-2 mb-2">
+            <div class="flex flex-wrap -mx-3 mb-6" id="edit_answers">
+                <div class="w-full px-3">
+                    <label>Answers:</label>
+                </div>
+            </div>
+            <button type="button" id="edit_add_answer" class="btn btn-secondary me-2">Add Option</button>
+          </div>
+
           <div class="mb-3">      
             <label for="edit-card-image" class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
               Card Image</label>
@@ -217,6 +216,7 @@
             id="edit-card-image" name="card_image" accept="image/*">
             <small class="form-text text-muted">Leave empty to keep the current image.</small>
           </div>
+
           <input type="hidden" id="edit-card-id" name="card_id">
           <button type="submit" class="btn btn-primary">Save changes</button>
         </form>
@@ -235,8 +235,8 @@
       </div>
       <div class="modal-body">
         <div class="alert alert-warning mt-3">
-            IMPORTANT: Updating the card, will increase card version. Older version won't be able to scan anymore. User that scan the QR code
-            will get the latest version. Older version(s) will be available for trading.
+          IMPORTANT: Updating the card, will increase card version. Older version won't be able to scan anymore. User that scan the QR code
+          will get the latest version. Older version(s) will be available for trading.
         </div>
         <form id="update-form" method="POST" action="" enctype="multipart/form-data">
           @csrf
@@ -265,6 +265,28 @@
               @endforeach
             </select>
           </div>
+
+          <div class="flex flex-wrap -mx-3 mb-6">
+            <div class="w-full px-3">
+                <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="update_question">
+                    Question
+                </label>
+                <textarea
+                  class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                  id="update_question" name="update_question" placeholder="Question" required>{{ old('question') }}
+                </textarea>
+            </div>
+          </div>
+
+          <div class="ml-2 mb-2">
+            <div class="flex flex-wrap -mx-3 mb-6" id="update_answers">
+                <div class="w-full px-3">
+                    <label>Answers:</label>
+                </div>
+            </div>
+            <button type="button" id="update_add_answer" class="btn btn-secondary me-2">Add Option</button>
+          </div>
+
           <div class="mb-3">      
             <label for="update-card-image" class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
               Card Image</label>
@@ -272,6 +294,7 @@
             id="update-card-image" name="card_image" accept="image/*">
             <small class="form-text text-muted">Leave empty to keep the current image.</small>
           </div>
+
           <input type="hidden" id="update-card-id" name="card_id">
           <button type="submit" class="btn btn-primary">Proceed with update</button>
         </form>
@@ -280,19 +303,92 @@
   </div>
 </div>
 
-
-<!-- QR Code Modal -->
-<div class="modal fade" id="qrCodeModal" tabindex="-1" role="dialog" aria-labelledby="qrCodeModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-              <p id="cardName"></p>
-              <h5 class="modal-title" id="qrCodeModalLabel">QR Code</h5>
-            </div>
-            <div class="modal-body text-center">
-                <img id="qrCodeImage" src="" alt="QR Code">
-            </div>
-        </div>
+<!-- Confirm Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="delete-form" method="POST">
+          @csrf
+          @method('DELETE')
+          <div class="text-danger mt-3">
+            Warning: This will delete the selected card. If you delete the latest version, all others versions will be deleted as well. 
+            This action cannot be undone.
+          </div>
+          <input type="hidden" id="delete-card-id" name="card_id">
+          <input type="hidden" name="page" value="{{ request()->input('page', 1) }}">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="cardSubmitDeleteForm()">Delete</button>
+      </div>
     </div>
+  </div>
 </div>
 
+@section('scripts')
+<script>
+    // Auto-hide alerts after 5 seconds
+    setTimeout(function() {
+        let alerts = document.querySelectorAll('.alert[role="alert"]');
+        alerts.forEach(alert => {
+            let bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        });
+    }, 5000); // this is in milliseconds, 1000ms = 1 second
+</script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+        var edit_q_index = 0;
+        $('#edit_add_answer').click(function() {
+            ++edit_q_index;
+            $('#edit_answers').append(
+                `
+            <div class="w-full px-3 answer_body mt-1">
+                <div class="answer">
+                    <input type="text" name="edit_answers[${edit_q_index}]" required>
+                    <input type="radio" class="mr-1" name="is_correct" value="${edit_q_index}"> Correct
+                    <button type="button" class="btn btn-danger ml-2 remove-answer">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+            `
+            );
+        })
+        $(document).on('click', '.remove-answer', function() {
+            $(this).parents('div.answer_body').remove();
+        });
+    });
+
+
+    $(document).ready(function() {
+        var update_q_index = 0;
+        $('#update_add_answer').click(function() {
+            ++update_q_index;
+            $('#update_answers').append(
+                `
+            <div class="w-full px-3 answer_body mt-1">
+                <div class="answer">
+                    <input type="text" name="update_answers[${update_q_index}]" required>
+                    <input type="radio" class="mr-1" name="is_correct" value="${update_q_index}"> Correct
+                    <button type="button" class="btn btn-danger ml-2 remove-answer">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+            `
+            );
+        })
+        $(document).on('click', '.remove-answer', function() {
+            $(this).parents('div.answer_body').remove();
+        });
+    });
+</script>
+@endsection

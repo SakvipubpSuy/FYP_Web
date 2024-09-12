@@ -15,6 +15,7 @@ class CardTier extends Model
         'card_XP',
         'card_energy_required',
         'color',
+        'card_RP_required',
     ];
     protected $attributes = [
         'color' => '#000000', // Default color as black

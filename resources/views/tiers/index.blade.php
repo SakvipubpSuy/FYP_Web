@@ -3,19 +3,19 @@
 @section('content')
 <div class="container mx-auto px-5 mt-4 mb-4">
     <div class="flex justify-between items-center mb-4">
-        <h2 class="text-2xl font-bold">Tiers</h2>
-        <form method="GET" action="{{ route('tiers.search') }}" class="mb-4">
-            <div class="flex">
-                <input type="text" name="query" placeholder="Search cards..." class="w-full px-4 py-2 border rounded" value="{{ request('query') }}">
-                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-2">
-                    Search
-                </button>
-            </div>
-        </form>
-        <a href="{{ route('tiers.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+        <h2 class="text-2xl font-bold ml-2">Tiers</h2>
+        <a href="{{ route('tiers.create') }}" class="btn btn-primary ml-2">
         Add New Tier
         </a>
     </div>
+    <form method="GET" action="{{ route('tiers.search') }}" class="mb-4">
+        <div class="flex">
+            <input type="text" name="query" placeholder="Search tiers..." class="w-full px-4 py-2 border rounded" value="{{ request('query') }}">
+            <button type="submit" class="btn btn-primary ml-2">
+                Search
+            </button>
+        </div>
+    </form>
     <div class="container">
         <table class="table table-striped">
             <thead>

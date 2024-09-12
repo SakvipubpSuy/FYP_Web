@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ReputationController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AdminController;
@@ -20,10 +21,10 @@ use App\Http\Controllers\TierController;
 |
 */
 
-
-// Route::get('/', function () {
-//     return view('test');
-// });
+// Disable the jetstream built-in routes
+Route::get('/user/api-tokens', function () {
+    abort(404);
+});
 
 Route::post('password/email', [AdminController::class, 'sendResetLinkEmail'])->name('admin.password.email');
 Route::post('password/reset', [AdminController::class, 'reset'])->name('admin.password.update');
@@ -32,11 +33,12 @@ Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
 ])->group(function () {
-
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard.index');
     Route::get('/users',[DashboardController::class,'users'])->name('dashboard.users');
-    Route::get('/admins',[AdminController::class,'index'])->name('admins.index');
     Route::get('/decks/search', [DeckController::class, 'search'])->name('decks.search');
+    Route::get('/decks/reputation-titles', [ReputationController::class, 'index'])->name('reputation-titles.index');
+    Route::patch('/decks/reputation-titles/edit', [ReputationController::class, 'edit'])->name('reputation-titles.edit');
+    Route::post('/decks/download-pdf/{deckId}', [DeckController::class, 'downloadPDF'])->name('decks.downloadPDF');
     Route::get('cards/search',[CardController::class, 'search'])->name('cards.search');
     Route::get('/decks/{card_id}/qrcode', [CardController::class, 'generateQrCode'])->name('cards.qrcode');
     Route::get('/tiers/search',[TierController::class,'search'])->name('tiers.search');
@@ -50,5 +52,15 @@ Route::middleware([
     Route::resource('cards', CardController::class);
     Route::resource('tiers', TierController::class);
 
+});
+
+Route::middleware([
+    'auth:sanctum',
+    config('jetstream.auth_session'),
+    'superadmin'
+])->group(function () {
+    Route::get('/admins', [AdminController::class, 'index'])->name('admins.index');
+    Route::post('/admins', [AdminController::class, 'register'])->name('admins.register');
+    Route::delete('/admins/{id}', [AdminController::class, 'destroy'])->name('admins.destroy');
 });
 

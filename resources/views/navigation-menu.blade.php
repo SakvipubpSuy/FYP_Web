@@ -15,9 +15,11 @@
                     <x-nav-link href="{{ route('dashboard.index') }}" :active="request()->routeIs('dashboard.index')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    <x-nav-link href="{{ route('admins.index') }}" :active="request()->routeIs('admins.index')">
-                        {{ __('Admins') }}
-                    </x-nav-link>
+                    @if (Auth::check() && Auth::user()->role === 'superadmin')
+                        <x-nav-link href="{{ route('admins.index') }}" :active="request()->routeIs('admins.index')">
+                            {{ __('Admins') }}
+                        </x-nav-link>
+                    @endif
                     <x-nav-link href="{{ route('decks.index') }}" :active="request()->routeIs('decks')">
                         {{ __('Decks') }}
                     </x-nav-link>
@@ -113,12 +115,15 @@
                             <x-dropdown-link href="{{ route('profile.show') }}">
                                 {{ __('Profile') }}
                             </x-dropdown-link>
-
-                            @if (Laravel\Jetstream\Jetstream::hasApiFeatures())
+                         
+                            {{--
+                             @if (Laravel\Jetstream\Jetstream::hasApiFeatures())
                                 <x-dropdown-link href="{{ route('api-tokens.index') }}">
                                     {{ __('API Tokens') }}
                                 </x-dropdown-link>
-                            @endif
+                            @endif 
+                            --}}
+                            
 
                             <div class="border-t border-gray-200"></div>
 

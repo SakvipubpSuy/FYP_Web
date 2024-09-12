@@ -1,3 +1,5 @@
+<!-- Jetstream's built-in API management alreay disabled, go to config/jetstream.php to enable it again -->
+
 <div>
     <!-- Generate API Token -->
     <x-form-section submit="createApiToken">

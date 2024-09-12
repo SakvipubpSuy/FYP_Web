@@ -23,3 +23,16 @@ export function deckOpenEditModal(deck) {
     });
     myModal.show();
 }
+export function openDownloadQRCodeModal() {
+    const downloadModal = document.getElementById("downloadQRCodeModal");
+
+    downloadModal.classList.remove("hidden");
+    downloadModal.classList.add("flex");
+}
+
+export function closeDownloadQRCodeModal() {
+    const downloadModal = document.getElementById("downloadQRCodeModal");
+
+    downloadModal.classList.remove("flex");
+    downloadModal.classList.add("hidden");
+}

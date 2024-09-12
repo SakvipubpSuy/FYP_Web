@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Crypt;
 use App\Models\Card;
 use App\Models\Deck;
 use App\Models\User;
@@ -65,7 +66,7 @@ class CardController extends Controller
     public function scanCard(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'card_id' => 'required|integer',
+            'card_id' => 'required|string',
         ]);
     
         if ($validator->fails()) {
@@ -74,30 +75,50 @@ class CardController extends Controller
     
         $user = auth()->user();
         $card_id = $request->input('card_id');
+        $decrypted_card_id = Crypt::decryptString($card_id);
     
         try {
             // Fetch card and its energy requirement
-            $card = Card::findOrFail($card_id);
+            $card = Card::findOrFail($decrypted_card_id);
             $cardEnergyRequired = $card->cardTier->card_energy_required;
+            $cardRPRequired = $card->cardTier->card_RP_required;
     
             // Check if the user has sufficient energy
             if ($user->energy < $cardEnergyRequired) {
                 return response()->json(['message' => 'Not enough energy to scan this card.'], 400);
             }
-    
+            
+             // Fetch the deck the card belongs to
+            $deck = $card->deck;
+            
+            // Calculate total and scanned cards in the deck for the user
+            $totalCardsInDeck = $deck->cards()->count();
+            $scannedCardsInDeck = $deck->cards()->whereHas('users', function ($query) use ($user) {
+                $query->where('users.id', $user->id);
+            })->count();
+
+             // Calculate percentage of cards scanned by the user
+            $scannedPercentage = ($scannedCardsInDeck / $totalCardsInDeck) * 100;
+                    // Check if the user meets the percentage requirement for scanning
+            if ($scannedPercentage < $cardRPRequired) {
+                return response()->json([
+                    'message' => "You need to scan at least $cardRPRequired% of this deck to scan this card."
+                ], 400);
+            }
+
             // Check if the card already exists in the pivot table for this user
             $exists = DB::table('card_user')
                         ->where('user_id', $user->id)
-                        ->where('card_id', $card_id)
+                        ->where('card_id', $decrypted_card_id)
                         ->exists();
     
             if ($exists) {
                 return response()->json(['message' => 'You have already scanned this card.'], 200);
             } else {
                 // Use a transaction to attach the card and reduce energy atomically
-                DB::transaction(function () use ($user, $card_id, $cardEnergyRequired) {
+                DB::transaction(function () use ($user, $decrypted_card_id, $cardEnergyRequired) {
                     // Attach the card to the user
-                    $user->cards()->attach($card_id);
+                    $user->cards()->attach($decrypted_card_id);
     
                     // Reduce user's energy
                     $user->energy -= $cardEnergyRequired;
@@ -189,9 +210,10 @@ class CardController extends Controller
     //FOR WEB 
     public function index()
     {   
+        $cards = Card::with('question.answers')->paginate(4);
         $cardTiers = CardTier::all();
-        $cards = Card::paginate(4); 
         $decks = Deck::all();
+
         return view('cards.index', compact('cards','cardTiers','decks'));
     }
 
@@ -209,7 +231,7 @@ class CardController extends Controller
         // dd($request->all()); // Uncomment this line for debugging if needed
     
         $validatedData = $request->validate([
-            'card_name' => 'required|string|max:255',
+            'card_name' => 'required|string|max:255|unique:cards,card_name',
             'card_tier_id' => 'required|string|max:255',
             'deck_id' => 'required|exists:decks,deck_id',
             'card_description' => 'required|string',
@@ -260,6 +282,10 @@ class CardController extends Controller
                         ]);
                     }
                 }
+
+                // Generate and save QR code
+                $qrCodePath = $this->generateAndStoreQrCode($card->card_id);
+                $card->update(['qr_code_path' => $qrCodePath]);
             });
         
             return redirect()->route('cards.create')->with('success', 'Card created successfully!');
@@ -286,8 +312,11 @@ class CardController extends Controller
             'card_tier_id' => 'exists:card_tiers,card_tier_id',
             'deck_id' => 'exists:decks,deck_id',
             'card_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'edit_question' => 'nullable|string',  // Make sure question is coming from 'question'
+            'edit_answers.*' => 'string|min:2',  // Validate individual answers
+            'is_correct' => 'nullable|integer',  // Correct answer index
         ]);
-        
+
         // Handle image upload if present
         $old_img_url = $card->img_url;
         $img_url = $old_img_url;
@@ -295,15 +324,14 @@ class CardController extends Controller
             $image = $request->file('card_image');
             $cardname = $request->card_name;
             $timestamp = time();
-            // $originalName = pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME);
             $extension = $image->getClientOriginalExtension();
             $imageName = $cardname . '_' . $timestamp . '.' . $extension;
             $imagePath = 'card-img/' . $imageName;
-            // Store the new image on the SFTP server
+            // Store the new image
             $path = $image->storeAs('', $imagePath, 'public');
             $img_url = Storage::disk('public')->url($imagePath);
 
-            // Delete the old image if it exists
+            // Delete old image if exists
             if ($old_img_url) {
                 $oldImagePath = parse_url($old_img_url, PHP_URL_PATH);
                 $relativeImagePath = 'card-img/' . basename($oldImagePath);
@@ -316,15 +344,47 @@ class CardController extends Controller
         }
 
         try {
-            // Update the card details
+            // Update the card's basic details
             $card->update(array_merge($validatedData, ['img_url' => $img_url]));
 
-            return redirect()->route('cards.index')->with('editSuccess', 'Card edit successfully.');
-        } catch (\Exception $e) {
-            \Log::error('Card update failed: ' . $e->getMessage());
-            return redirect()->route('cards.index')->with('editError', 'Card edit failed!');
+            // Check if the question is being updated
+        if ($request->filled('edit_question')) {
+            $question = Question::where('card_id', $card->card_id)->first();
+
+            // If question exists, update it; otherwise, create a new one
+            if ($question) {
+                $question->update([
+                    'question' => $request->edit_question,
+                ]);
+            } else {
+                $question = Question::create([
+                    'card_id' => $card->card_id, // Link question to the new card version
+                    'question' => $request->edit_question,
+                ]);
+            }
+
+            // Delete previous answers associated with the question (if updating)
+            $question->answers()->delete();
+
+            // Add new answers
+            foreach ($validatedData['edit_answers'] as $index => $answerText) {
+                $isCorrect = $index == $validatedData['is_correct']; // Compare index with is_correct value
+
+                // Create a new answer for the question
+                $question->answers()->create([
+                    'answer' => $answerText,
+                    'is_correct' => $isCorrect ? 1 : 0, // Mark the correct answer
+                ]);
+            }
         }
+
+        return redirect()->route('cards.index')->with('editSuccess', 'Card edited successfully.');
+    } catch (\Exception $e) {
+        \Log::error('Card edit failed: ' . $e->getMessage());
+        return redirect()->route('cards.index')->with('editError', 'Card edit failed!');
     }
+    }
+
 
     public function updateCard(Request $request, Card $card)
     {
@@ -336,50 +396,112 @@ class CardController extends Controller
                 'deck_id' => 'exists:decks,deck_id',
                 'card_tier_id' => 'exists:card_tiers,card_tier_id',
                 'card_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'update_question' => 'required|string', // Allow question update
+                'update_answers.*' => 'required|string|min:2', // Validate answers
+                'is_correct' => 'required|integer', // Correct answer index
             ]);
+    
+            // Find the existing card
+            $existingCard = Card::findOrFail($card->card_id);
 
+            // Check if the card is the latest version (parent_card_id must be null)
+            if (!is_null($existingCard->parent_card_id)) {
+                return redirect()->back()->with('updateError', 'You can only update the latest version of the card.');
+            }
+    
+            // If a new image is uploaded, handle the upload and update the img_url
             if ($request->hasFile('card_image')) {
                 $image = $request->file('card_image');
                 $cardname = $request->card_name;
                 $timestamp = time();
-                // $originalName = pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME);
                 $extension = $image->getClientOriginalExtension();
                 $imageName = $cardname . '_' . $timestamp . '.' . $extension;
                 $imagePath = 'card-img/' . $imageName;
-                // Store the new image on the SFTP server
+    
+                // Store the new image
                 $path = $image->storeAs('', $imagePath, 'public');
                 $img_url = Storage::disk('public')->url($imagePath);
+    
+                // Update the existing card's img_url
+                $existingCard->img_url = $img_url;
             }
-            // Find the existing card
-            $existingCard = Card::findOrFail($card->card_id);
 
-            // Create a new card entry for the old version
+            // Create a new card entry for the old version before updating
             $oldCard = $existingCard->replicate();
             $oldCard->card_version = $existingCard->card_version;
             $oldCard->parent_card_id = $existingCard->parent_card_id ?: $existingCard->card_id;
             $oldCard->save();
-
+    
+            // Replicate the old question and its answers to associate them with the old card version
+            $oldQuestion = Question::where('card_id', $existingCard->card_id)->first();
+            if ($oldQuestion) {
+                $replicatedQuestion = $oldQuestion->replicate();
+                $replicatedQuestion->card_id = $oldCard->card_id; // Link to the old version
+                $replicatedQuestion->save();
+    
+                // Replicate the answers associated with the old question
+                $oldAnswers = Answer::where('question_id', $oldQuestion->question_id)->get();
+                foreach ($oldAnswers as $oldAnswer) {
+                    $replicatedAnswer = $oldAnswer->replicate();
+                    $replicatedAnswer->question_id = $replicatedQuestion->question_id; // Link to the replicated question
+                    $replicatedAnswer->save();
+                }
+            }
+    
             // Update the existing card with new details and increment the version
             $existingCard->update([
                 'card_name' => $request->input('card_name'),
                 'card_description' => $request->input('card_description'),
                 'deck_id' => $request->input('deck_id'),
                 'card_tier_id' => $request->input('card_tier_id'),
-                'card_version' => $existingCard->card_version + 1,
+                'card_version' => $existingCard->card_version + 1, //latest version +1
                 'parent_card_id' => $oldCard->parent_card_id,
-                'img_url' => $img_url,
             ]);
-
+    
+            // Handle question update if present
+            if ($request->has('update_question')) {
+                // Check if the card already has a question linked to it
+                $question = Question::where('card_id', $existingCard->card_id)->first();
+                
+                // If question exists, update it; otherwise, create a new one
+                if ($question) {
+                    $question->update([
+                        'question' => $request->update_question,
+                    ]);
+                } else {
+                    $question = Question::create([
+                        'card_id' => $existingCard->card_id, // Link question to the new card version
+                        'question' => $request->update_question,
+                    ]);
+                }
+    
+                if ($request->has('update_answers')) {
+                    // First delete existing answers to ensure a clean slate
+                    Answer::where('question_id', $question->question_id)->delete();
+                
+                    // Create new answers
+                    foreach ($request->update_answers as $index => $answer) {
+                        Answer::create([
+                            'question_id' => $question->question_id,
+                            'answer' => $answer,
+                            // Use the exact value from $request->is_correct to check if the current answer is correct
+                            'is_correct' => ($index == $request->is_correct) ? 1 : 0,
+                        ]);
+                    }
+                }
+            }
+    
             return redirect()->route('cards.index')->with('updateSuccess', 'Card updated successfully.');
         } catch (\Exception $e) {
             // Log the error for debugging purposes
             Log::error('Error updating card: ' . $e->getMessage());
-
+    
             // Redirect back with an error message
             return redirect()->back()->with('updateError', 'There was an error updating the card. Please try again.');
         }
     }
-
+    
+    
     public function destroy(Request $request,$card_id)
     {
         $card = Card::find($card_id);
@@ -412,32 +534,46 @@ class CardController extends Controller
         return redirect()->route('cards.index', ['page' => $page])->with('deleteSuccess', 'Card has been deleted successfully!');
     }
 
-    public function generateQrCode($card_id)
+    public function generateAndStoreQrCode($card_id)
     {
-
-        // Get the card information from the database
-        // $card = Card::find($card_id);
-        // Create QR code
         try {
+            // Fetch the card from the database
+            $card = Card::findOrFail($card_id);
+    
+            // Encrypt the card ID
+            $encryptedCardId = Crypt::encryptString($card_id);
+    
+            // Create the QR code
             $writer = new PngWriter();
-            $qrCode = QrCode::create($card_id)
-            ->setEncoding(new Encoding('UTF-8'))
-            ->setErrorCorrectionLevel(ErrorCorrectionLevel::Low)
-            ->setSize(500)
-            ->setMargin(5)
-            ->setRoundBlockSizeMode(RoundBlockSizeMode::Margin)
-            ->setForegroundColor(new Color(0, 0, 0))
-            ->setBackgroundColor(new Color(255, 255, 255));
-            
+            $qrCode = QrCode::create($encryptedCardId)
+                ->setEncoding(new Encoding('UTF-8'))
+                ->setErrorCorrectionLevel(ErrorCorrectionLevel::Low)
+                ->setSize(500)
+                ->setMargin(5)
+                ->setRoundBlockSizeMode(RoundBlockSizeMode::Margin)
+                ->setForegroundColor(new Color(0, 0, 0))
+                ->setBackgroundColor(new Color(255, 255, 255));
+    
             $result = $writer->write($qrCode);
+    
+            // Sanitize the card name to remove or replace any special characters
+            $sanitizedCardName = preg_replace('/[^A-Za-z0-9\-]/', '_', $card->card_name);
+    
+            // Generate a unique filename for the QR code using both the card name and ID
+            $timestamp = time();
+            $qrCodeName = 'qrcode_' . $sanitizedCardName . '_' . $card_id . '_' . $timestamp . '.png';
+            $qrCodePath = 'qr-codes/' . $qrCodeName;
+    
+            // Store the QR code in the specified storage disk
+            Storage::disk('public')->put($qrCodePath, $result->getString());
+    
+            // Optionally return the full URL instead of just the path
+            return Storage::disk('public')->url($qrCodePath);
         } catch (\Exception $e) {
-            dd($e->getMessage());
+            // Handle the exception (log it, return a response, etc.)
+            \Log::error('QR code generation failed: ' . $e->getMessage());
+            return response()->json(['message' => 'QR code generation failed'], 500);
         }
-            // Output the QR code as a PNG image
-        return response($result->getString(), 200, [
-            'Content-Type' => 'image/png',
-            'Content-Disposition' => 'inline; filename="qrcode.png"'
-        ]);
     }
 
     public function search(Request $request)
