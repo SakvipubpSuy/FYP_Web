@@ -31,6 +31,11 @@ class CardController extends Controller
 {
 
     //FOR API 
+    public function decrypt($encrypted)
+    {
+        $decrypted = Crypt::decryptString($encrypted);
+        return response()->json($decrypted);
+    }
     public function getCardsByDeckID(Request $request,$deck_id)
     {
         // Fetch cards that belong to the specified deck

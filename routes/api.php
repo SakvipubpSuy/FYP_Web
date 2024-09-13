@@ -28,6 +28,7 @@ Route::post('/forget-password/reset', [AuthController::class, 'resetPassword']);
 
 //Protected Route
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/decrypt/{encrypted}', [CardController::class, 'decrypt']);
     Route::get('/user', [UserController::class, 'getUser']);
     Route::get('/users', [UserController::class, 'getAllUsers']);
     Route::post('/logout', [AuthController::class, 'logout']);
