@@ -413,6 +413,14 @@ class CardController extends Controller
             if (!is_null($existingCard->parent_card_id)) {
                 return redirect()->back()->with('updateError', 'You can only update the latest version of the card.');
             }
+
+
+            // Create a new card entry for the old version before updating
+            $oldCard = $existingCard->replicate();
+            $oldCard->card_version = $existingCard->card_version;
+            $oldCard->parent_card_id = $existingCard->parent_card_id ?: $existingCard->card_id;
+            $oldCard->img_url = $existingCard->img_url;
+            $oldCard->save();
     
             // If a new image is uploaded, handle the upload and update the img_url
             if ($request->hasFile('card_image')) {
@@ -430,13 +438,6 @@ class CardController extends Controller
                 // Update the existing card's img_url
                 $existingCard->img_url = $img_url;
             }
-
-            // Create a new card entry for the old version before updating
-            $oldCard = $existingCard->replicate();
-            $oldCard->card_version = $existingCard->card_version;
-            $oldCard->parent_card_id = $existingCard->parent_card_id ?: $existingCard->card_id;
-            $oldCard->img_url = $existingCard->img_url;
-            $oldCard->save();
     
             // Replicate the old question and its answers to associate them with the old card version
             $oldQuestion = Question::where('card_id', $existingCard->card_id)->first();
