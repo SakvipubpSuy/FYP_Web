@@ -435,6 +435,7 @@ class CardController extends Controller
             $oldCard = $existingCard->replicate();
             $oldCard->card_version = $existingCard->card_version;
             $oldCard->parent_card_id = $existingCard->parent_card_id ?: $existingCard->card_id;
+            $oldCard->img_url = $existingCard->img_url;
             $oldCard->save();
     
             // Replicate the old question and its answers to associate them with the old card version
