@@ -201,9 +201,7 @@ class CardController extends Controller
     
             return response()->json(['message' => 'Correct answer!', 'energy' => $user->energy], 200);
         } else {
-            // Deduct energy for wrong answer, ensuring it doesn't go below zero
-            $user->energy = max(0, $user->energy - $energyReward);
-            $user->save();
+            $user->cards()->detach($card->card_id);
             return response()->json(['message' => 'Wrong answer!', 'energy' => $user->energy]);
         }
     }
@@ -509,24 +507,43 @@ class CardController extends Controller
     }
     
     
-    public function destroy(Request $request,$card_id)
+    public function destroy(Request $request, $card_id)
     {
+        // Find the card by its ID
         $card = Card::find($card_id);
-
+    
         if (!$card) {
             return redirect()->route('cards.index')->with('deleteError', 'Card not found!');
         }
-        $old_img_url = $card->img_url;
-        if ($old_img_url) {
-            $oldImagePath = parse_url($old_img_url, PHP_URL_PATH);
-            $relativeImagePath = 'card-img/' . basename($oldImagePath);
-            if (Storage::disk('public')->exists($relativeImagePath)) {
-                Storage::disk('public')->delete($relativeImagePath);
-            } else {
-                \Log::info('Old image not found: ' . $relativeImagePath);
-            }
+    
+        // Find the root card (the one with no parent_card_id)
+        $rootCard = $card;
+        while ($rootCard->parent_card_id) {
+            $rootCard = Card::find($rootCard->parent_card_id);
         }
-        $card->delete();
+    
+        // Delete all versions of the card (including the root card)
+        $allVersions = Card::where('parent_card_id', $rootCard->card_id)
+                            ->orWhere('card_id', $rootCard->card_id)
+                            ->get();
+    
+        foreach ($allVersions as $version) {
+            // Delete the associated image if it exists
+            $old_img_url = $version->img_url;
+            if ($old_img_url) {
+                $oldImagePath = parse_url($old_img_url, PHP_URL_PATH);
+                $relativeImagePath = 'card-img/' . basename($oldImagePath);
+                if (Storage::disk('public')->exists($relativeImagePath)) {
+                    Storage::disk('public')->delete($relativeImagePath);
+                } else {
+                    \Log::info('Old image not found: ' . $relativeImagePath);
+                }
+            }
+        
+            // Delete the card version
+            $version->delete();
+        }
+    
         // Get the current page number
         $page = $request->input('page', 1);
     

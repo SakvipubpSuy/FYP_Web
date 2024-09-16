@@ -14,8 +14,8 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             SuperadminSeeder::class,
-            // Other seeders can go here
             DeckTitlesSeeder::class,
+            CardTiersSeeder::class,
         ]);
     }
 }
