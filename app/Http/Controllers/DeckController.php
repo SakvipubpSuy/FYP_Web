@@ -17,29 +17,48 @@ class DeckController extends Controller
     {
         $userId = auth()->id();
     
-        // Get decks with total and scanned card counts for the authenticated user
-        $decks = Deck::withCount('cards as total_cards_count')
-            ->withCount(['cards as scanned_cards_count' => function ($query) use ($userId) {
-                $query->join('card_user', 'cards.card_id', '=', 'card_user.card_id')
-                      ->where('card_user.user_id', $userId);
-            }])
-            ->get();
+        // Get decks with total XP and scanned XP 
+        $decks = Deck::with('cards.cardTier')->get();
     
         // Fetch deck titles from DeckTitle table
         $deckTitles = DB::table('deck_titles')->get();
     
-        // Loop through each deck to calculate the percentage and determine the title
+        // Loop through each deck to calculate the total XP, scanned XP, percentage, and title
         foreach ($decks as $deck) {
-            $totalCards = $deck->total_cards_count;
-            $scannedCards = $deck->scanned_cards_count;
+
+            // Get all cards in the deck (including older versions)
+            $allCards = $deck->cards;
+
+            // Filter out only the latest version cards (parent_card_id is null) for XP calculation
+            $latestVersionCards = $allCards->filter(function ($card) {
+                return is_null($card->parent_card_id);
+            });
+            
+            // Calculate total XP for the deck (latest version cards)
+            $totalXP = $latestVersionCards->sum(function ($card) {
+                return $card->cardTier->card_XP;
+            });
     
-            // Calculate percentage of scanned cards
-            $percentage = $totalCards > 0 ? ($scannedCards / $totalCards) * 100 : 0;
+            // Calculate scanned XP for the user (latest version cards that the user has scanned)
+            $scannedXP = $latestVersionCards->filter(function ($card) use ($userId) {
+                return DB::table('card_user')
+                        ->where('user_id', $userId)
+                        ->where('card_id', $card->card_id)
+                        ->exists();
+            })->sum(function ($card) {
+                return $card->cardTier->card_XP;
+            });
+    
+            // Calculate percentage of XP scanned by the user
+            $percentage = $totalXP > 0 ? ($scannedXP / $totalXP) * 100 : 0;
     
             // Find the appropriate title based on the percentage
             $deck->title = $deckTitles->first(function ($title) use ($percentage) {
                 return $percentage >= $title->min_percentage && $percentage <= $title->max_percentage;
             })->title ?? 'No Title'; // Default to 'No Title' if no match is found
+    
+            $deck->total_XP = $totalXP;
+            $deck->user_XP = $scannedXP;
         }
     
         return response()->json($decks);

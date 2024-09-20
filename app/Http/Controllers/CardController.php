@@ -77,7 +77,7 @@ class CardController extends Controller
         if ($validator->fails()) {
             return response()->json(['message' => 'Invalid input.'], 400);
         }
-    
+        $userId = auth()->id();
         $user = auth()->user();
         $card_id = $request->input('card_id');
         $decrypted_card_id = Crypt::decryptString($card_id);
@@ -95,19 +95,36 @@ class CardController extends Controller
             
              // Fetch the deck the card belongs to
             $deck = $card->deck;
-            
-            // Calculate total and scanned cards in the deck for the user
-            $totalCardsInDeck = $deck->cards()->count();
-            $scannedCardsInDeck = $deck->cards()->whereHas('users', function ($query) use ($user) {
-                $query->where('users.id', $user->id);
-            })->count();
+            $allCards = $deck->cards;
 
-             // Calculate percentage of cards scanned by the user
-            $scannedPercentage = ($scannedCardsInDeck / $totalCardsInDeck) * 100;
-                    // Check if the user meets the percentage requirement for scanning
-            if ($scannedPercentage < $cardRPRequired) {
+            // Calculate the total XP in the deck (only latest version cards)
+            // Filter out only the latest version cards (parent_card_id is null) for XP calculation
+            $latestVersionCards = $allCards->filter(function ($card) {
+                return is_null($card->parent_card_id);
+            });
+            
+            // Calculate total XP for the deck (latest version cards)
+            $totalDeckXP = $latestVersionCards->sum(function ($card) {
+                return $card->cardTier->card_XP;
+            });
+    
+            // Calculate scanned XP for the user (latest version cards that the user has scanned)
+            $collectedXP = $latestVersionCards->filter(function ($card) use ($userId) {
+                return DB::table('card_user')
+                        ->where('user_id', $userId)
+                        ->where('card_id', $card->card_id)
+                        ->exists();
+            })->sum(function ($card) {
+                return $card->cardTier->card_XP;
+            });
+            
+            // Calculate the percentage of XP the user has collected
+            $collectedXPPercentage = ($collectedXP / $totalDeckXP) * 100;
+            
+            // Check if the user meets the XP percentage requirement
+            if ($collectedXPPercentage < $cardRPRequired) {
                 return response()->json([
-                    'message' => "You need to scan at least $cardRPRequired% of this deck to scan this card."
+                    'message' => "You need to collect at least $cardRPRequired% of the total XP in this deck to scan this card."
                 ], 400);
             }
 
