@@ -6,6 +6,8 @@ export function tierOpenEditModal(tier) {
     document.getElementById("edit-card-XP").value = tier.card_XP;
     document.getElementById("edit-card-energy-required").value =
         tier.card_energy_required;
+    document.getElementById("edit-card-RP-required").value =
+        tier.card_RP_required;
     document.getElementById("edit-color").value = tier.color;
 
     var myModal = new bootstrap.Modal(

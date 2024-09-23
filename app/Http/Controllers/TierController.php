@@ -51,6 +51,7 @@ class TierController extends Controller
             'card_tier_name' => 'required|string|max:255',
             'card_XP' => 'required|integer',
             'card_energy_required' => 'required|integer',
+            'card_RP_required' => 'required|integer|min:0|max:100',
             'color' => 'required|string|max:7',
         ]);
 

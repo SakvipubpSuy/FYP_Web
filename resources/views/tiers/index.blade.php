@@ -26,7 +26,9 @@
                     <th scope="col">Tier EXP</th>
                     <th scope="col">Energy Required</th>
                     <th scope="col">Total Cards</th>
+                    <th scope="col">% of RP Required</th>
                     <th scope="col">Color</th>
+                    <th scope="col">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -38,6 +40,7 @@
                     <td>{{ $cardtier->card_XP }}</td>
                     <td>{{ $cardtier->card_energy_required }}</td>
                     <td>{{ $cardtier->cards->count() }}</td>
+                    <td>{{ $cardtier->card_RP_required }} %</td>
                     <td>{{ $cardtier->color }}</td>
                     <td class="py-2">
                         <button class="text-blue-600 hover:text-blue-900" onclick="tierOpenEditModal({{$cardtier}})">Edit</button>
@@ -74,6 +77,10 @@
           <div class="mb-3">
             <label for="edit-card-energy-required" class="form-label">Energy Required</label>
             <input type="number" class="form-control" id="edit-card-energy-required" name="card_energy_required" required>
+          </div>
+          <div class="mb-3">
+            <label for="edit-card-RP-required" class="form-label">RP Required</label>
+            <input type="number" class="form-control" id="edit-card-RP-required" min="0" max="100" name="card_RP_required" required>
           </div>
           <div class="mb-3">
             <label for="edit-color" class="form-label">Color</label>
