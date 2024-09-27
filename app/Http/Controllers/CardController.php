@@ -258,7 +258,7 @@ class CardController extends Controller
             'question' => 'required|string',
             'answers.*' => 'required|min:2',
             'is_correct' => 'required|integer',
-            'card_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', 
+            'card_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:5120', 
         ]);
         $img_url = null;
         // Check if an image is uploaded
@@ -331,7 +331,7 @@ class CardController extends Controller
             'card_description' => 'string',
             'card_tier_id' => 'exists:card_tiers,card_tier_id',
             'deck_id' => 'exists:decks,deck_id',
-            'card_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'card_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:5120',
             'edit_question' => 'nullable|string',  // Make sure question is coming from 'question'
             'edit_answers.*' => 'string|min:2',  // Validate individual answers
             'is_correct' => 'nullable|integer',  // Correct answer index
@@ -415,75 +415,86 @@ class CardController extends Controller
                 'card_description' => 'required|string|max:255',
                 'deck_id' => 'exists:decks,deck_id',
                 'card_tier_id' => 'exists:card_tiers,card_tier_id',
-                'card_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-                'update_question' => 'required|string', // Allow question update
-                'update_answers.*' => 'required|string|min:2', // Validate answers
-                'is_correct' => 'required|integer', // Correct answer index
+                'card_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:5120',
+                'update_question' => 'required|string',
+                'update_answers.*' => 'required|string|min:2',
+                'is_correct' => 'required|integer',
             ]);
     
             // Find the existing card
             $existingCard = Card::findOrFail($card->card_id);
-
+    
             // Check if the card is the latest version (parent_card_id must be null)
             if (!is_null($existingCard->parent_card_id)) {
                 return redirect()->back()->with('updateError', 'You can only update the latest version of the card.');
             }
-
-
-            // Create a new card entry for the old version before updating
-            $oldCard = $existingCard->replicate();
-            $oldCard->card_version = $existingCard->card_version;
-            $oldCard->parent_card_id = $existingCard->parent_card_id ?: $existingCard->card_id;
-            $oldCard->img_url = $existingCard->img_url;
-            $oldCard->save();
     
-            // If a new image is uploaded, handle the upload and update the img_url
+            // Create a new card for the updated version
+            $newCard = $existingCard->replicate();
+            $newCard->card_name = $request->card_name; // Update name with version
+            $newCard->card_description = $request->card_description;
+            $newCard->deck_id = $request->deck_id;
+            $newCard->card_tier_id = $request->card_tier_id;
+            $newCard->card_version = $existingCard->card_version + 1;
+            $newCard->parent_card_id = null; // New card, so parent_card_id is null
+            $newCard->save();
+    
+            // Generate and store a new QR code for the new card version
+            $qrCodePath = $this->generateAndStoreQrCode($newCard->card_id);
+            $newCard->qr_code_path = $qrCodePath;
+            $newCard->save();
+    
+            // Update the old card to reference the new card as its parent
+            $existingCard->parent_card_id = $newCard->card_id;
+            $existingCard->save();
+    
+            // If there are older versions, update their parent_card_id to point to the new card
+            $olderVersions = Card::where('parent_card_id', $existingCard->card_id)->get();
+            foreach ($olderVersions as $olderVersion) {
+                $olderVersion->parent_card_id = $newCard->card_id;
+                $olderVersion->save();
+            }
+    
+            // Handle image upload if present
             if ($request->hasFile('card_image')) {
                 $image = $request->file('card_image');
                 $cardname = $request->card_name;
+                // Replace spaces in the card name with underscores
+                $sanitizedCardName = str_replace(' ', '_', $cardname);
                 $timestamp = time();
                 $extension = $image->getClientOriginalExtension();
-                $imageName = $cardname . '_' . $timestamp . '.' . $extension;
+                $imageName = $sanitizedCardName . '_' . $timestamp . '.' . $extension;
                 $imagePath = 'card-img/' . $imageName;
     
                 // Store the new image
                 $path = $image->storeAs('', $imagePath, 'public');
                 $img_url = Storage::disk('public')->url($imagePath);
     
-                // Update the existing card's img_url
-                $existingCard->img_url = $img_url;
-            }
-    
-            // Replicate the old question and its answers to associate them with the old card version
-            $oldQuestion = Question::where('card_id', $existingCard->card_id)->first();
-            if ($oldQuestion) {
-                $replicatedQuestion = $oldQuestion->replicate();
-                $replicatedQuestion->card_id = $oldCard->card_id; // Link to the old version
-                $replicatedQuestion->save();
-    
-                // Replicate the answers associated with the old question
-                $oldAnswers = Answer::where('question_id', $oldQuestion->question_id)->get();
-                foreach ($oldAnswers as $oldAnswer) {
-                    $replicatedAnswer = $oldAnswer->replicate();
-                    $replicatedAnswer->question_id = $replicatedQuestion->question_id; // Link to the replicated question
-                    $replicatedAnswer->save();
+                // Update the new card's img_url
+                $newCard->img_url = $img_url;
+                $newCard->save();
+            }else {
+                // No new image uploaded, so copy the existing image from the previous version
+                if ($existingCard->img_url) {
+                    // Get the image file name and extension
+                    $existingImageName = basename($existingCard->img_url);
+
+                    // Copy the file to a new location with a new name (e.g., appending the new card ID or a timestamp)
+                    $newImageName = $newCard->card_name . '_' . time() . '.' . pathinfo($existingImageName, PATHINFO_EXTENSION);
+                    $newImagePath = 'card-img/' . $newImageName;
+            
+                    // Copy the file within the storage (ensure 'public' is specified in both source and destination)
+                    Storage::disk('public')->copy('card-img/' . $existingImageName, $newImagePath);
+            
+                    // Update the new card with the new image URL
+                    $newCard->img_url = Storage::disk('public')->url($newImagePath);
+                    $newCard->save();
                 }
             }
     
-            // Update the existing card with new details and increment the version
-            $existingCard->update([
-                'card_name' => $request->input('card_name'),
-                'card_description' => $request->input('card_description'),
-                'deck_id' => $request->input('deck_id'),
-                'card_tier_id' => $request->input('card_tier_id'),
-                'card_version' => $existingCard->card_version + 1, //latest version +1
-                'parent_card_id' => $oldCard->parent_card_id,
-            ]);
-    
-            // Handle question update if present
             if ($request->has('update_question')) {
                 // Check if the card already has a question linked to it
-                $question = Question::where('card_id', $existingCard->card_id)->first();
+                $question = Question::where('card_id', $newCard->card_id)->first();
                 
                 // If question exists, update it; otherwise, create a new one
                 if ($question) {
@@ -492,7 +503,7 @@ class CardController extends Controller
                     ]);
                 } else {
                     $question = Question::create([
-                        'card_id' => $existingCard->card_id, // Link question to the new card version
+                        'card_id' => $newCard->card_id, // Link question to the new card version
                         'question' => $request->update_question,
                     ]);
                 }
@@ -524,29 +535,43 @@ class CardController extends Controller
     }
     
     
+    
     public function destroy(Request $request, $card_id)
     {
         // Find the card by its ID
         $card = Card::find($card_id);
-    
+
         if (!$card) {
             return redirect()->route('cards.index')->with('deleteError', 'Card not found!');
         }
-    
-        // Find the root card (the one with no parent_card_id)
-        $rootCard = $card;
-        while ($rootCard->parent_card_id) {
-            $rootCard = Card::find($rootCard->parent_card_id);
-        }
-    
-        // Delete all versions of the card (including the root card)
-        $allVersions = Card::where('parent_card_id', $rootCard->card_id)
-                            ->orWhere('card_id', $rootCard->card_id)
-                            ->get();
-    
-        foreach ($allVersions as $version) {
+
+        // Check if the card is the latest version (no parent_card_id)
+        if (is_null($card->parent_card_id)) {
+            // The card is the latest version, so delete it and all its older versions
+            $allVersions = Card::where('parent_card_id', $card->card_id)
+                                ->orWhere('card_id', $card->card_id)
+                                ->get();
+
+            foreach ($allVersions as $version) {
+                // Delete the associated image if it exists
+                $old_img_url = $version->img_url;
+                if ($old_img_url) {
+                    $oldImagePath = parse_url($old_img_url, PHP_URL_PATH);
+                    $relativeImagePath = 'card-img/' . basename($oldImagePath);
+                    if (Storage::disk('public')->exists($relativeImagePath)) {
+                        Storage::disk('public')->delete($relativeImagePath);
+                    } else {
+                        \Log::info('Old image not found: ' . $relativeImagePath);
+                    }
+                }
+
+                // Delete the card version
+                $version->delete();
+            }
+        } else {
+            // The card is an older version, so just delete this specific version
             // Delete the associated image if it exists
-            $old_img_url = $version->img_url;
+            $old_img_url = $card->img_url;
             if ($old_img_url) {
                 $oldImagePath = parse_url($old_img_url, PHP_URL_PATH);
                 $relativeImagePath = 'card-img/' . basename($oldImagePath);
@@ -556,9 +581,9 @@ class CardController extends Controller
                     \Log::info('Old image not found: ' . $relativeImagePath);
                 }
             }
-        
-            // Delete the card version
-            $version->delete();
+
+            // Delete only this specific card version
+            $card->delete();
         }
     
         // Get the current page number

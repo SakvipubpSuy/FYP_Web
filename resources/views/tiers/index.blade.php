@@ -87,7 +87,7 @@
             <div id="edit-color-picker"></div>
             <input type="hidden" id="edit-color" name="color">
           </div>
-          <button type="submit" class="btn btn-primary">Update Tier</button>
+          <button type="submit" class="btn btn-primary">Edit Tier</button>
         </form>
       </div>
     </div>

@@ -345,15 +345,18 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script>
     $(document).ready(function() {
-        var edit_q_index = 0;
         $('#edit_add_answer').click(function() {
-            ++edit_q_index;
+        // Get the current number of answers (count the existing answer fields)
+        var edit_currentAnswerCount = $('#edit_answers .answer_body').length;
+
+        // Increment the index from the current number of answers
+        var edit_newAnswerIndex = edit_currentAnswerCount;
             $('#edit_answers').append(
                 `
             <div class="w-full px-3 answer_body mt-1">
                 <div class="answer">
-                    <input type="text" name="edit_answers[${edit_q_index}]" required>
-                    <input type="radio" class="mr-1" name="is_correct" value="${edit_q_index}"> Correct
+                    <input type="text" name="edit_answers[${edit_newAnswerIndex}]" required>
+                    <input type="radio" class="mr-1" name="is_correct" value="${edit_newAnswerIndex}"> Correct
                     <button type="button" class="btn btn-danger ml-2 remove-answer">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
@@ -369,23 +372,30 @@
 
 
     $(document).ready(function() {
-        var update_q_index = 0;
-        $('#update_add_answer').click(function() {
-            ++update_q_index;
-            $('#update_answers').append(
-                `
-            <div class="w-full px-3 answer_body mt-1">
-                <div class="answer">
-                    <input type="text" name="update_answers[${update_q_index}]" required>
-                    <input type="radio" class="mr-1" name="is_correct" value="${update_q_index}"> Correct
-                    <button type="button" class="btn btn-danger ml-2 remove-answer">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                </div>
-            </div>
-            `
-            );
-        })
+    // Function to handle the dynamic addition of answers
+      $('#update_add_answer').click(function() {
+          // Get the current number of answers (count the existing answer fields)
+          var update_currentAnswerCount = $('#update_answers .answer_body').length;
+
+          // Increment the index from the current number of answers
+          var update_newAnswerIndex = update_currentAnswerCount;
+
+          $('#update_answers').append(
+              `
+              <div class="w-full px-3 answer_body mt-1">
+                  <div class="answer">
+                      <input type="text" name="update_answers[${update_newAnswerIndex}]" required>
+                      <input type="radio" class="mr-1" name="is_correct" value="${update_newAnswerIndex}"> Correct
+                      <button type="button" class="btn btn-danger ml-2 remove-answer">
+                          <i class="fa-solid fa-xmark"></i>
+                      </button>
+                  </div>
+              </div>
+              `
+          );
+        });
+
+        // Function to handle the removal of answers
         $(document).on('click', '.remove-answer', function() {
             $(this).parents('div.answer_body').remove();
         });
