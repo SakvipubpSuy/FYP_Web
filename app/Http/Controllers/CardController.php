@@ -564,10 +564,22 @@ class CardController extends Controller
                         \Log::info('Old image not found: ' . $relativeImagePath);
                     }
                 }
+                // Delete the associated QR code image if it exists
+                $old_qr_code_path = $version->qr_code_path;
+                if ($old_qr_code_path) {
+                    $oldQRCodePath = parse_url($old_qr_code_path, PHP_URL_PATH);
+                    $relativeQRCodePath = 'qr-codes/' . basename($oldQRCodePath);
+                    if (Storage::disk('public')->exists($relativeQRCodePath)) {
+                        Storage::disk('public')->delete($relativeQRCodePath);
+                    } else {
+                        \Log::info('Old QR code not found: ' . $relativeQRCodePath);
+                    }
+                }
 
                 // Delete the card version
                 $version->delete();
             }
+
         } else {
             // The card is an older version, so just delete this specific version
             // Delete the associated image if it exists
@@ -579,6 +591,17 @@ class CardController extends Controller
                     Storage::disk('public')->delete($relativeImagePath);
                 } else {
                     \Log::info('Old image not found: ' . $relativeImagePath);
+                }
+            }
+            // Delete the associated QR code image if it exists
+            $old_qr_code_path = $card->qr_code_path;
+            if ($old_qr_code_path) {
+                $oldQRCodePath = parse_url($old_qr_code_path, PHP_URL_PATH);
+                $relativeQRCodePath = 'qr-codes/' . basename($oldQRCodePath);
+                if (Storage::disk('public')->exists($relativeQRCodePath)) {
+                    Storage::disk('public')->delete($relativeQRCodePath);
+                } else {
+                    \Log::info('Old QR code not found: ' . $relativeQRCodePath);
                 }
             }
 

@@ -114,6 +114,7 @@ export function toggleQRCode(button, qrCodePath, cardName) {
     const modal = document.getElementById("qrCodeModal");
     const qrCodeImage = document.getElementById("qrCodeImage");
     const qrCodeCardName = document.getElementById("qrCodeCardName");
+    const downloadButton = document.getElementById("downloadQRCode");
 
     // Check if modal, image, and card name exist
     if (!modal || !qrCodeImage || !qrCodeCardName) {
@@ -124,6 +125,12 @@ export function toggleQRCode(button, qrCodePath, cardName) {
     // Set the QR code image source and card name
     qrCodeImage.src = qrCodePath;
     qrCodeCardName.textContent = cardName;
+
+    // Set the download link for the QR code
+    downloadButton.href = qrCodePath;
+    // Create a file name for the download (replace spaces with underscores)
+    const sanitizedCardName = cardName.replace(/\s+/g, "_");
+    downloadButton.download = `${sanitizedCardName}_QR_Code.png`; // Set the download attribute for the file name
 
     // Show the modal
     modal.classList.remove("hidden");
