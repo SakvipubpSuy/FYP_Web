@@ -84,6 +84,13 @@
         
         <!-- QR Code Image -->
         <img id="qrCodeImage" src="" alt="QR Code" class="w-64 h-64 mx-auto">
+
+        <!-- Download button -->
+        <div class="flex justify-center">
+          <a id="downloadQRCode" class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700 transition" download>
+            Download QR Code
+          </a>
+        </div>
     </div>
 </div>
 
