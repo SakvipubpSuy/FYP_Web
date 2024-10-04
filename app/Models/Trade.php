@@ -27,5 +27,13 @@ class Trade extends Model
     {
         return $this->belongsTo(User::class, 'receiver_id', 'id');
     }
+    public function initiatorCard()
+    {
+        return $this->belongsTo(Card::class, 'initiator_card_id', 'card_id');
+    }
+    public function receiverCard()
+    {
+        return $this->belongsTo(Card::class, 'receiver_card_id', 'card_id');
+    }
 }
 

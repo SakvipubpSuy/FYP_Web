@@ -80,6 +80,7 @@ class TradeController extends Controller
                     'trade_id' => $trade->trade_id,
                     'initiator_id' => $trade->initiator_id,
                     'initiator_name' => $trade->initiator->name,
+                    'initiator_card_name' => $trade->initiatorCard->card_name,
                     'receiver_id' => $trade->receiver_id,
                     'status' => $trade->status,
                     'created_at' => $trade->created_at,
@@ -95,6 +96,7 @@ class TradeController extends Controller
                 return [
                     'trade_id' => $trade->trade_id,
                     'initiator_id' => $trade->initiator_id,
+                    'initiator_card_name' => $trade->initiatorCard->card_name,
                     'receiver_id' => $trade->receiver_id,
                     'receiver_name' => $trade->receiver->name,
                     'status' => $trade->status,
@@ -111,8 +113,10 @@ class TradeController extends Controller
                 return [
                     'trade_id' => $trade->trade_id,
                     'initiator_id' => $trade->initiator_id,
+                    'initiator_card_name' => $trade->initiatorCard->card_name,
                     'receiver_id' => $trade->receiver_id,
                     'receiver_name' => $trade->receiver->name,
+                    'receiver_card_name' => $trade->receiverCard->card_name,
                     'status' => $trade->status,
                     'created_at' => $trade->created_at,
                     'updated_at' => $trade->updated_at,
@@ -130,8 +134,10 @@ class TradeController extends Controller
                 return [
                     'trade_id' => $trade->trade_id,
                     'initiator_id' => $trade->initiator_id,
+                    'initiator_card_name' => $trade->initiatorCard->card_name,
                     'receiver_id' => $trade->receiver_id,
                     'receiver_name' => $trade->receiver->name,
+                    'receiver_card_name' => $trade->receiverCard->card_name,
                     'status' => $trade->status,
                     'created_at' => $trade->created_at,
                     'updated_at' => $trade->updated_at,
