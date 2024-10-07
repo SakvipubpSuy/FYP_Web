@@ -13,6 +13,7 @@ use Dompdf\Options;
 
 class DeckController extends Controller
 {
+    //FOR API
     public function getDecks(Request $request)
     {
         $userId = auth()->id();
@@ -63,6 +64,8 @@ class DeckController extends Controller
     
         return response()->json($decks);
     }
+
+    //FOR WEB 
     public function index()
     {
         $decks = Deck::withCount('cards')->paginate(4); // Assuming you want 4 decks per page

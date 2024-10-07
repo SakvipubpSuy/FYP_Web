@@ -3,7 +3,7 @@
 @section('content')
 <div class="container mx-auto px-5 mt-4 mb-4">
 
-@if(session('editRepuationSuccess'))
+  @if(session('editRepuationSuccess'))
         <div class="w-full px-3 mb-6">
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <strong class="font-bold">Success!</strong>
@@ -30,12 +30,21 @@
     </div>
   @endif
 
+  @if($errors->has('overlap'))
+    <div class="w-full px-3 mb-6">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong class="font-bold">Error!</strong>
+            <div>{{ $errors->first('overlap') }}</div>
+        </div>
+    </div>
+  @endif
+
 
     <div class="flex justify-between items-center mb-4">
-        <h2 class="text-2xl font-bold">Reputation Titles</h2>
-        <a href="{{ route('tiers.create') }}" class="btn btn-primary ml-2">
-        Add Reputation Title
-        </a>
+      <h2 class="text-2xl font-bold">Reputation Titles</h2>
+      <a href="javascript:void(0)" class="btn btn-primary ml-2" data-bs-toggle="modal" data-bs-target="#addReputationModal">
+      Add Reputation Title
+      </a>
     </div>
     <div class="container">
         <table class="table table-striped">
@@ -45,6 +54,7 @@
                     <th scope="col">Minimal Percentage</th>
                     <th scope="col">Maximal Percentage</th>
                     <th scope="col">Title</th>
+                    <th scope="col">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -56,6 +66,9 @@
                     <td>{{ $deckTitle->title }}</td>
                     <td class="py-2">
                         <button class="text-blue-600 hover:text-blue-900" onclick="reputationOpenEditModal({{$deckTitle}})">Edit</button>
+                        @if (Auth::check() && Auth::user()->role === 'superadmin')
+                        <button class="text-red-600 hover:text-red-900" onclick="reputationOpenDeleteModal({{ $deckTitle->deck_titles_id }}, '{{ $deckTitle->title }}')">Delete</button>
+                        @endif
                     </td> 
                 </tr>
                 @endforeach
@@ -102,6 +115,65 @@
     </div>
   </div>
 </div>
+
+<!-- Add Reputation Modal -->
+<div class="modal fade" id="addReputationModal" tabindex="-1" aria-labelledby="addReputationModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addReputationModalLabel">Add Reputation Title</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="add-reputation-form" method="POST" action="{{ route('reputation-titles.store') }}">
+          @csrf
+  
+          <div class="mb-3">
+            <label for="add-min-percentage" class="form-label">Minimum Percentage</label>
+            <input type="number" class="form-control" id="add-min-percentage" name="min_percentage" min="0" max="100" required>
+          </div>
+          
+          <div class="mb-3">
+            <label for="add-max-percentage" class="form-label">Maximum Percentage</label>
+            <input type="number" class="form-control" id="add-max-percentage" name="max_percentage" min="0" max="100" required>
+          </div>
+          
+          <div class="mb-3">
+            <label for="add-title" class="form-label">Title</label>
+            <input type="text" class="form-control" id="add-title" name="title" required>
+          </div>
+          
+          <button type="submit" class="btn btn-primary">Add Title</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirm Delete</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete the reputation title <strong><span id="modal-deck-title-name"></span></strong>?</p>
+        <form id="delete-reputation-form" method="POST">
+          @csrf
+          @method('DELETE')
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" onclick="document.getElementById('delete-reputation-form').submit()">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 
 @section('scripts')
 <script>

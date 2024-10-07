@@ -24,3 +24,13 @@ export function reputationOpenEditModal(reputationTitle) {
     );
     myModal.show();
 }
+export function reputationOpenDeleteModal(id, title) {
+    document.getElementById("modal-deck-title-name").innerText = title;
+    document.getElementById(
+        "delete-reputation-form"
+    ).action = `/decks/reputation-titles/${id}/delete`; // Route to delete reputation title
+    let deleteModal = new bootstrap.Modal(
+        document.getElementById("deleteConfirmationModal")
+    );
+    deleteModal.show();
+}

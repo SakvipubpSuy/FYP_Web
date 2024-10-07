@@ -6,7 +6,10 @@ import {
     openDownloadQRCodeModal,
     closeDownloadQRCodeModal,
 } from "./deck";
-import { reputationOpenEditModal } from "./reputation";
+import {
+    reputationOpenEditModal,
+    reputationOpenDeleteModal,
+} from "./reputation";
 import {
     cardOpenDeleteModal,
     cardSubmitDeleteForm,
@@ -22,6 +25,7 @@ window.deckOpenDeleteModal = deckOpenDeleteModal;
 window.deckSubmitDeleteForm = deckSubmitDeleteForm;
 window.deckOpenEditModal = deckOpenEditModal;
 window.reputationOpenEditModal = reputationOpenEditModal;
+window.reputationOpenDeleteModal = reputationOpenDeleteModal;
 window.openDownloadQRCodeModal = openDownloadQRCodeModal;
 window.closeDownloadQRCodeModal = closeDownloadQRCodeModal;
 window.cardOpenDeleteModal = cardOpenDeleteModal;

@@ -19,7 +19,7 @@ class ReputationController extends Controller
         $validatedData = $request->validate([
             'min_percentage' => 'required|numeric|min:0|max:100',
             'max_percentage' => 'required|numeric|min:0|max:100',
-            'title' => 'required|string|max:255',
+            'title' => 'required|string|max:50',
             'deck_titles_id' => 'required|integer|exists:deck_titles,deck_titles_id', // Ensure the ID exists
         ]);
     
@@ -47,6 +47,48 @@ class ReputationController extends Controller
     
         // Redirect back with success message
         return redirect()->route('reputation-titles.index')->with('editRepuationSuccess', 'Reputation title updated successfully!');
+    }
+        public function store(Request $request)
+    {
+        $validatedData = $request->validate([
+            'min_percentage' => 'required|numeric|min:0|max:100',
+            'max_percentage' => 'required|numeric|min:0|max:100',
+            'title' => 'required|string|max:50',
+        ]);
+
+        // Check for overlap with existing reputation titles
+        $existingTitle = DeckTitle::where(function ($query) use ($validatedData) {
+            $query->whereBetween('min_percentage', [$validatedData['min_percentage'], $validatedData['max_percentage']])
+                  ->orWhereBetween('max_percentage', [$validatedData['min_percentage'], $validatedData['max_percentage']]);
+        })->first();
+
+        if ($existingTitle) {
+            return redirect()->back()->withErrors([
+                'overlap' => 'The provided percentage range overlaps with another reputation title.',
+            ]);
+        }
+
+        // Store the new reputation title
+        DeckTitle::create($validatedData);
+
+        return redirect()->back()->with('editRepuationSuccess', 'New Reputation Title added successfully.');
+    }
+
+    public function destroy($id)
+    {
+        // Find the deck title by ID
+        $deckTitle = DeckTitle::findOrFail($id);
+        
+        try {
+            // Delete the deck title
+            $deckTitle->delete();
+            
+            // Redirect back with success message
+            return redirect()->back()->with('deleteSuccess', 'Reputation title deleted successfully!');
+        } catch (\Exception $e) {
+            // Handle any errors during the deletion process
+            return redirect()->back()->withErrors(['deleteError' => 'An error occurred while trying to delete the reputation title.']);
+        }
     }
 
 }

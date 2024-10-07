@@ -38,6 +38,7 @@ Route::middleware([
     Route::get('/decks/search', [DeckController::class, 'search'])->name('decks.search');
     Route::get('/decks/reputation-titles', [ReputationController::class, 'index'])->name('reputation-titles.index');
     Route::patch('/decks/reputation-titles/edit', [ReputationController::class, 'edit'])->name('reputation-titles.edit');
+    Route::post('/decks/reputation-title', [ReputationController::class, 'store'])->name('reputation-titles.store');
     Route::post('/decks/download-pdf/{deckId}', [DeckController::class, 'downloadPDF'])->name('decks.downloadPDF');
     Route::get('cards/search',[CardController::class, 'search'])->name('cards.search');
     Route::get('/decks/{card_id}/qrcode', [CardController::class, 'generateQrCode'])->name('cards.qrcode');
@@ -62,5 +63,6 @@ Route::middleware([
     Route::get('/admins', [AdminController::class, 'index'])->name('admins.index');
     Route::post('/admins', [AdminController::class, 'register'])->name('admins.register');
     Route::delete('/admins/{id}', [AdminController::class, 'destroy'])->name('admins.destroy');
+    Route::delete('/decks/reputation-titles/{id}/delete', [ReputationController::class, 'destroy'])->name('reputation-titles.destroy');
 });
 
