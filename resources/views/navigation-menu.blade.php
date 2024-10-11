@@ -20,13 +20,13 @@
                             {{ __('Admins') }}
                         </x-nav-link>
                     @endif
-                    <x-nav-link href="{{ route('decks.index') }}" :active="request()->routeIs('decks')">
+                    <x-nav-link href="{{ route('decks.index') }}" :active="request()->routeIs('decks.index')">
                         {{ __('Decks') }}
                     </x-nav-link>
-                    <x-nav-link href="{{ route('cards.index') }}" :active="request()->routeIs('cards')">
+                    <x-nav-link href="{{ route('cards.index') }}" :active="request()->routeIs('cards.index')">
                         {{ __('Cards') }}
                     </x-nav-link>
-                    <x-nav-link href="{{ route('tiers.index') }}" :active="request()->routeIs('tiers')">
+                    <x-nav-link href="{{ route('tiers.index') }}" :active="request()->routeIs('tiers.index')">
                         {{ __('Tiers') }}
                     </x-nav-link>
                 </div>
