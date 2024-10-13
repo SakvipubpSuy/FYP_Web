@@ -198,6 +198,62 @@ class DeckController extends Controller
                     \Log::info('Old image not found: ' . $relativeImagePath);
                 }
             }
+
+            // Delete all cards and their assets
+            foreach ($deck->cards as $card) {
+                // Delete card image
+                if ($card->img_url) {
+                    $cardImagePath = parse_url($card->img_url, PHP_URL_PATH);
+                    $relativeCardImagePath = 'card-img/' . basename($cardImagePath);
+                    if (Storage::disk('public')->exists($relativeCardImagePath)) {
+                        Storage::disk('public')->delete($relativeCardImagePath);
+                    } else {
+                        \Log::info('Card image not found: ' . $relativeCardImagePath);
+                    }
+                }
+            
+                // Delete QR code
+                if ($card->qr_code_path) {
+                    $qrCodePath = parse_url($card->qr_code_path, PHP_URL_PATH);
+                    $relativeQrCodePath = 'qr-codes/' . basename($qrCodePath);
+                    if (Storage::disk('public')->exists($relativeQrCodePath)) {
+                        Storage::disk('public')->delete($relativeQrCodePath);
+                    } else {
+                        \Log::info('QR code not found: ' . $relativeQrCodePath);
+                    }
+                }
+            
+                // If the card is the latest version (i.e., parent_card_id is null), delete older versions
+                if ($card->parent_card_id === null) {
+                    $olderCards = Card::where('parent_card_id', $card->card_id)->get();
+                    foreach ($olderCards as $olderCard) {
+                        // Delete older card image
+                        if ($olderCard->img_url) {
+                            $olderCardImagePath = parse_url($olderCard->img_url, PHP_URL_PATH);
+                            $relativeOlderCardImagePath = 'card-img/' . basename($olderCardImagePath);
+                            if (Storage::disk('public')->exists($relativeOlderCardImagePath)) {
+                                Storage::disk('public')->delete($relativeOlderCardImagePath);
+                            } else {
+                                \Log::info('Older card image not found: ' . $relativeOlderCardImagePath);
+                            }
+                        }
+                    
+                        // Delete older card QR code
+                        if ($olderCard->qr_code_path) {
+                            $olderQrCodePath = parse_url($olderCard->qr_code_path, PHP_URL_PATH);
+                            $relativeOlderQrCodePath = 'qr-codes/' . basename($olderQrCodePath);
+                            if (Storage::disk('public')->exists($relativeOlderQrCodePath)) {
+                                Storage::disk('public')->delete($relativeOlderQrCodePath);
+                            } else {
+                                \Log::info('Older card QR code not found: ' . $relativeOlderQrCodePath);
+                            }
+                        }
+                    
+                        // Delete the older version card itself
+                        $olderCard->delete();
+                    }
+                }
+            }
             $deck->delete();
         
             // Check if there are decks on the current page
