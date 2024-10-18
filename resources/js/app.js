@@ -18,7 +18,7 @@ import {
     toggleQRCode,
     closeQRCodeModal,
 } from "./card";
-import { tierOpenEditModal } from "./tier";
+import { tierOpenEditModal, tierOpenDeleteModal } from "./tier";
 import { validateAdminRegisterForm, showAdminDeleteModal } from "./admin";
 
 window.deckOpenDeleteModal = deckOpenDeleteModal;
@@ -35,5 +35,6 @@ window.cardOpenUpdateModal = cardOpenUpdateModal;
 window.toggleQRCode = toggleQRCode;
 window.closeQRCodeModal = closeQRCodeModal;
 window.tierOpenEditModal = tierOpenEditModal;
+window.tierOpenDeleteModal = tierOpenDeleteModal;
 window.validateAdminRegisterForm = validateAdminRegisterForm;
 window.showAdminDeleteModal = showAdminDeleteModal;

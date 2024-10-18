@@ -2,6 +2,22 @@
 
 @section('content')
 <div class="container mx-auto px-5 mt-4 mb-4">
+  @if($errors->has('tierDeleteSuccess'))
+    <div class="w-full px-3 mb-6">
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong class="font-bold">Error!</strong>
+            <div>{{ $errors->first('tierDeleteSuccess') }}</div>
+        </div>
+    </div>
+  @endif
+  @if($errors->has('tierDeleteError'))
+    <div class="w-full px-3 mb-6">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong class="font-bold">Error!</strong>
+            <div>{{ $errors->first('tierDeleteError') }}</div>
+        </div>
+    </div>
+  @endif
     <div class="flex justify-between items-center mb-4">
         <h2 class="text-2xl font-bold ml-2">Tiers</h2>
         <a href="{{ route('tiers.create') }}" class="btn btn-primary ml-2">
@@ -44,6 +60,9 @@
                     <td>{{ $cardtier->color }}</td>
                     <td class="py-2">
                         <button class="text-blue-600 hover:text-blue-900" onclick="tierOpenEditModal({{$cardtier}})">Edit</button>
+                        @if (Auth::check() && Auth::user()->role === 'superadmin')
+                        <button class="text-red-600 hover:text-red-900" onclick="tierOpenDeleteModal({{ $cardtier->card_tier_id }}, '{{ $cardtier->card_tier_name }}')">Delete</button>
+                        @endif
                     </td>
                 </tr>
                 @endforeach
@@ -93,3 +112,39 @@
     </div>
   </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirm Delete</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete this tier title <strong><span id="modal-tier-name"></span></strong>?</p>
+        <form id="delete-tier-form" method="POST">
+          @csrf
+          @method('DELETE')
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" onclick="document.getElementById('delete-tier-form').submit()">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@section('scripts')
+<script>
+    // Auto-hide alerts after 5 seconds
+    setTimeout(function() {
+        let alerts = document.querySelectorAll('.alert[role="alert"]');
+        alerts.forEach(alert => {
+            let bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        });
+    }, 5000); // this is in milliseconds, 1000ms = 1 second
+</script>
+@endsection

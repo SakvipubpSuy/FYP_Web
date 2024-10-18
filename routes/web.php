@@ -64,5 +64,6 @@ Route::middleware([
     Route::post('/admins', [AdminController::class, 'register'])->name('admins.register');
     Route::delete('/admins/{id}', [AdminController::class, 'destroy'])->name('admins.destroy');
     Route::delete('/decks/reputation-titles/{id}/delete', [ReputationController::class, 'destroy'])->name('reputation-titles.destroy');
+    Route::delete('/tiers/{id}/delete', [TierController::class, 'destroy'])->name('tiers.destroy');
 });
 

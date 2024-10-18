@@ -75,3 +75,11 @@ document.addEventListener("DOMContentLoaded", function () {
         initPickr("#edit-color-picker", "edit-color", editColor);
     }
 });
+export function tierOpenDeleteModal(id, title) {
+    document.getElementById("modal-tier-name").innerText = title;
+    document.getElementById("delete-tier-form").action = `/tiers/${id}/delete`; // Route to delete reputation title
+    let deleteModal = new bootstrap.Modal(
+        document.getElementById("deleteConfirmationModal")
+    );
+    deleteModal.show();
+}
