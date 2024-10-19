@@ -17,6 +17,8 @@ import {
     cardOpenUpdateModal,
     toggleQRCode,
     closeQRCodeModal,
+    openCardPreview,
+    closeCardPreview,
 } from "./card";
 import { tierOpenEditModal, tierOpenDeleteModal } from "./tier";
 import { validateAdminRegisterForm, showAdminDeleteModal } from "./admin";
@@ -34,6 +36,8 @@ window.cardOpenEditModal = cardOpenEditModal;
 window.cardOpenUpdateModal = cardOpenUpdateModal;
 window.toggleQRCode = toggleQRCode;
 window.closeQRCodeModal = closeQRCodeModal;
+window.openCardPreview = openCardPreview;
+window.closeCardPreview = closeCardPreview;
 window.tierOpenEditModal = tierOpenEditModal;
 window.tierOpenDeleteModal = tierOpenDeleteModal;
 window.validateAdminRegisterForm = validateAdminRegisterForm;

@@ -86,6 +86,20 @@
                 <!-- Section 1: Image -->
                 <div class="relative">
                     <img class="w-full h-48 object-cover" src="{{ $card->img_url ? asset($card->img_url) : asset('/images/no_img.jpg') }}" alt="Card Image">
+                    <!-- Preview Button (floating over the image on the left) -->
+                    <button class="absolute top-2 ml-2 bg-white text-gray-700 p-2 rounded-full shadow hover:bg-gray-100 transition" 
+                        onclick="openCardPreview(
+                            '{{ $card->img_url }}',
+                            '{{ $card->card_name }}',
+                            '{{ $card->cardTier->color }}',
+                            '{{ $card->deck->deck_name }}',
+                            '{{ $card->energy }}',
+                            '{{ $card->cardTier->card_tier_name }}',
+                            '{{ $card->cardTier->card_XP }}',
+                            '{{ $card->card_version }}'
+                        )">
+                      <i class="fas fa-eye"></i>
+                    </button>
                     <!-- QR Code Icon Button (floating over the image) -->
                     <button class="absolute top-2 right-2 bg-white text-gray-700 p-2 rounded-full shadow hover:bg-gray-100 transition" onclick="toggleQRCode(this, '{{ $card->qr_code_path }}', '{{ $card->card_name }}')">
                         <i class="fas fa-qrcode"></i>

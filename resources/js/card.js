@@ -150,3 +150,49 @@ export function closeQRCodeModal() {
     modal.classList.add("hidden");
     modal.classList.remove("flex");
 }
+export function openCardPreview(imageUrl, cardName, tierColor, deckName, energy, cardTierName, exp, version) {
+    const modalHtml = `
+        <div id="cardPreviewModal" class="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
+            <div class="bg-white p-4 rounded-lg shadow-lg w-80">
+                <!-- Card Border with dynamic gradient background -->
+                <div class="border-4 rounded-lg overflow-hidden shadow-md" style="border-color: ${tierColor}; background: linear-gradient(to top, rgba(0, 0, 0, 0.9), ${tierColor}, rgba(0, 0, 0, 0.9));">
+                    <!-- Card Details -->
+                    <div class="text-left text-gray-800 p-4 relative">
+                        <!-- Deck Name and Energy -->
+                        <span class="absolute top-2 left-2 text-sm font-bold " style="color: ${tierColor};">${deckName}</span>
+                        <span class="absolute top-2 right-2 text-sm flex items-center" style="color: ${tierColor};">
+                            <i class="fas fa-bolt"></i> ${energy}
+                        </span>
+                    </div>
+                    <!-- Card Image -->
+                    <div class="p-4">
+                        <img class="mx-auto h-32 w-48 object-cover" src="${imageUrl}" alt="Card Image">
+                    </div>
+                    <!-- Card Info -->
+                    <div class="text-center text-white px-4 py-2">
+                        <h3 class="text-lg font-bold text-white-800">${cardName}</h3>
+                    </div>
+                    <div class="text-left text-white px-4 py-2">
+                        <p>Card Tier: ${cardTierName}</p>
+                        <p>EXP: ${exp}</p>
+                        <p>Version: ${version}</p>
+                    </div>
+                </div>
+                <!-- Close Button -->
+                <div class="text-center p-4">
+                    <button class="bg-red-500 text-white py-2 px-4 rounded" onclick="closeCardPreview()">Close</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Append modal to the body
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+export function closeCardPreview() {
+    const modal = document.getElementById('cardPreviewModal');
+    if (modal) {
+        modal.remove();
+    }
+}
