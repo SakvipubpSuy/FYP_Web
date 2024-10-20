@@ -81,7 +81,7 @@ class DeckController extends Controller
         $validatedData = $request->validate([
             'deck_name' => 'required|string|max:255',
             'deck_description' => 'nullable|string',
-            'deck_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'deck_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:5120',
             // Add any other validation rules for your deck fields
         ]);
 
@@ -131,7 +131,7 @@ class DeckController extends Controller
         $validatedData = $request->validate([
             'deck_name' => 'string|max:255',
             'deck_description' => 'string',
-            'deck_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'deck_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:5120',
         ]);
         $old_img_url = $deck->img_url;
         $img_url = $old_img_url;
